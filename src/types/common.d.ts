@@ -11,8 +11,9 @@ export interface IUserEmailContext {
 
 interface IUser {
   email: string;
-  name: string;
   nickName: string;
   introduction: string;
-  profilePic: string;
+  profileImage: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

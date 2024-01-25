@@ -29,23 +29,28 @@ const SignUpStepOne = () => {
 
   const signUpHandler = async () => {
     try {
-      await createUserWithEmailAndPassword(authService, email, password).then((res: UserCredential) => {
-        console.log(res);
-        console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
-        console.log(`회원가입 2단계로 이동합니다.`);
-        // 가입한 유저의 email 전역 상태 관리
-        updateUserEmail(email);
-        const body: IUser = {
-          email: email,
-          name: '',
-          nickName: '',
-          introduction: '',
-          profilePic: '',
-        };
-        addDoc(collection(db, 'users'), body);
-
-        navigate('/sign-up-step-two');
-      });
+      await createUserWithEmailAndPassword(authService, email, password)
+        .then((res: UserCredential) => {
+          console.log(res);
+          console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
+          console.log(`회원가입 2단계로 이동합니다.`);
+          // 가입한 유저의 email 전역 상태 관리
+          const newUser: IUser = {
+            email: email,
+            nickName: '',
+            introduction: '',
+            profileImage: '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          const docRef = addDoc(collection(db, 'users'), newUser);
+          return docRef;
+        })
+        .then((res) => {
+          const userId = res.id;
+          updateUserEmail(userId);
+          navigate('/sign-up-step-two');
+        });
     } catch (error) {
       console.log(error);
     }
