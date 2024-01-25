@@ -5,7 +5,7 @@ interface ILoginInput {
   type: string;
   placeholder: string;
   value: string;
-  onChange: () => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 interface IInputsForm {
