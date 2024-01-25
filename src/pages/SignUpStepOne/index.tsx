@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { InputsForm, LoginInput } from '@/pages/Login';
 import { UserCredential, createUserWithEmailAndPassword } from 'firebase/auth';
-import { authService } from '@/firebase/firebase';
+import { authService, db } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
+import { addDoc, collection } from 'firebase/firestore';
+import { IUser } from '@/types/common';
+import { useUserEmail } from '@/contexts/LoginUserState';
 
 const SignUpStepOne = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [checkPassword, setCheckPassword] = useState('');
+
+  // 전역 관리할 유저 메일을 업데이트할 setter
+  const { updateUserEmail } = useUserEmail();
 
   const navigate = useNavigate();
 
@@ -27,6 +33,17 @@ const SignUpStepOne = () => {
         console.log(res);
         console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
         console.log(`회원가입 2단계로 이동합니다.`);
+        // 가입한 유저의 email 전역 상태 관리
+        updateUserEmail(email);
+        const body: IUser = {
+          email: email,
+          name: '',
+          nickName: '',
+          introduction: '',
+          profilePic: '',
+        };
+        addDoc(collection(db, 'users'), body);
+
         navigate('/sign-up-step-two');
       });
     } catch (error) {
