@@ -1,7 +1,7 @@
-import { useUserEmail } from '@/contexts/LoginUserState';
+import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, updateDoc } from 'firebase/firestore';
 import { InputsForm, LoginInput } from '../Login';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { db } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 // import { IUser } from '@/types/common';
@@ -9,8 +9,10 @@ import { useNavigate } from 'react-router-dom';
 const SignUpStepTwo = () => {
   const [nickName, setNickName] = useState('');
   const [introduction, setIntroduction] = useState('');
-  const { userEmail } = useUserEmail();
-
+  const { userUid, isLogin } = useUserUid();
+  useEffect(() => {
+    console.log(`2단계 페이지에서 로그인 여부 : `, isLogin);
+  }, []);
   const navigate = useNavigate();
 
   const onChangeNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +29,7 @@ const SignUpStepTwo = () => {
     const userUpdate = async () => {
       try {
         const newData = { nickName: nickName, introduction: introduction, updatedAt: new Date() };
-        const docRef = doc(db, 'users', userEmail);
+        const docRef = doc(db, 'users', userUid);
         await updateDoc(docRef, newData).then(() => {
           console.log(`유저 정보가 업데이트 되었습니다.`);
           navigate('/');

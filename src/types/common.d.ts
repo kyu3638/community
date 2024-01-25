@@ -4,9 +4,10 @@ export interface IChildrenProps {
   children: ReactNode;
 }
 
-export interface IUserEmailContext {
-  userEmail: string;
-  updateUserEmail: (arg: string) => void;
+export interface IUserUidContext {
+  userUid: string;
+  updateUserUid: (arg: string) => void;
+  isLogin: boolean;
 }
 
 interface IUser {

@@ -3,9 +3,9 @@ import { InputsForm, LoginInput } from '@/pages/Login';
 import { UserCredential, createUserWithEmailAndPassword } from 'firebase/auth';
 import { authService, db } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
-import { addDoc, collection } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { IUser } from '@/types/common';
-import { useUserEmail } from '@/contexts/LoginUserState';
+import { useUserUid } from '@/contexts/LoginUserState';
 
 const SignUpStepOne = () => {
   const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ const SignUpStepOne = () => {
   const [checkPassword, setCheckPassword] = useState('');
 
   // 전역 관리할 유저 메일을 업데이트할 setter
-  const { updateUserEmail } = useUserEmail();
+  const { updateUserUid, isLogin } = useUserUid();
 
   const navigate = useNavigate();
 
@@ -31,10 +31,10 @@ const SignUpStepOne = () => {
     try {
       await createUserWithEmailAndPassword(authService, email, password)
         .then((res: UserCredential) => {
-          console.log(res);
+          console.log(`res : `, res);
           console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
           console.log(`회원가입 2단계로 이동합니다.`);
-          // 가입한 유저의 email 전역 상태 관리
+          const userId = res.user.uid;
           const newUser: IUser = {
             email: email,
             nickName: '',
@@ -43,13 +43,14 @@ const SignUpStepOne = () => {
             createdAt: new Date(),
             updatedAt: new Date(),
           };
-          const docRef = addDoc(collection(db, 'users'), newUser);
-          return docRef;
-        })
-        .then((res) => {
-          const userId = res.id;
-          updateUserEmail(userId);
+          setDoc(doc(db, 'users', userId), newUser);
+          console.log(`로그인 여부 : `, isLogin);
+          updateUserUid(userId);
+          console.log(`userId : ${userId}`);
           navigate('/sign-up-step-two');
+        })
+        .then(() => {
+          console.log(`로그인 여부 : `, isLogin);
         });
     } catch (error) {
       console.log(error);

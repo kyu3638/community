@@ -1,9 +1,13 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
+  const navigate = useNavigate();
+  const mypp = () => {
+    navigate('/mypage');
+  };
   return (
     <div>
-      메인 화면입니다.<div>asdfasd</div>
+      Home<button onClick={mypp}>mypage</button>
     </div>
   );
 };

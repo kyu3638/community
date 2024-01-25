@@ -1,19 +1,22 @@
 import { createContext, useState, useContext } from 'react';
-import { IChildrenProps, IUserEmailContext } from '@/types/common.ts';
+import { IChildrenProps, IUserUidContext } from '@/types/common.ts';
 
-const UserEmailContext = createContext<IUserEmailContext>({
-  userEmail: '',
-  updateUserEmail: () => {},
+const UserUidContext = createContext<IUserUidContext>({
+  userUid: '',
+  updateUserUid: () => {},
+  isLogin: false,
 });
 
-export const useUserEmail = () => useContext(UserEmailContext);
+export const useUserUid = () => useContext(UserUidContext);
 
-export const UserEmailProvider = ({ children }: IChildrenProps) => {
-  const [userEmail, setUserEmail] = useState('');
+export const UserUidProvider = ({ children }: IChildrenProps) => {
+  const [userUid, setUserUid] = useState('');
 
-  const updateUserEmail = (val: string) => {
-    setUserEmail(val);
+  const updateUserUid = (val: string) => {
+    setUserUid(val);
   };
 
-  return <UserEmailContext.Provider value={{ userEmail, updateUserEmail }}>{children}</UserEmailContext.Provider>;
+  const isLogin = !!userUid;
+
+  return <UserUidContext.Provider value={{ userUid, updateUserUid, isLogin }}>{children}</UserUidContext.Provider>;
 };
