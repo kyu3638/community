@@ -52,7 +52,7 @@ const Login = () => {
 
 export default Login;
 
-const LoginInput = ({ label, type, placeholder, value, onChange }: ILoginInput) => {
+export const LoginInput = ({ label, type, placeholder, value, onChange }: ILoginInput) => {
   return (
     <>
       <label>{label}</label>
@@ -61,7 +61,7 @@ const LoginInput = ({ label, type, placeholder, value, onChange }: ILoginInput) 
   );
 };
 
-const InputsForm = ({ children }: IInputsForm) => {
+export const InputsForm = ({ children }: IInputsForm) => {
   return (
     <>
       <form className="flex flex-col">{children}</form>
