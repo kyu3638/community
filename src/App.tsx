@@ -1,7 +1,7 @@
 import './App.css';
 
 function App() {
-  return <div className="w-full h-screen flex flex-col justify-start items-center"></div>;
+  return <div>deploy completed</div>;
 }
 
 export default App;
