@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { InputsForm, LoginInput } from '@/pages/Login';
 import { UserCredential, createUserWithEmailAndPassword } from 'firebase/auth';
-import { authService, db } from '@/firebase/firebase';
+import { auth, db } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { IUser } from '@/types/common';
@@ -29,7 +29,7 @@ const SignUpStepOne = () => {
 
   const signUpHandler = async () => {
     try {
-      await createUserWithEmailAndPassword(authService, email, password)
+      await createUserWithEmailAndPassword(auth, email, password)
         .then((res: UserCredential) => {
           console.log(`res : `, res);
           console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
