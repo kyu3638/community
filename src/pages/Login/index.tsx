@@ -1,26 +1,39 @@
-import { ReactNode, useState } from 'react';
-
-interface ILoginInput {
-  label: string;
-  type: string;
-  placeholder: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-interface IInputsForm {
-  children: ReactNode;
-}
+import { useState } from 'react';
+import { ILoginInput, IInputsForm } from '@/types/common';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '@/firebase/firebase';
+import { UserCredential, signInWithEmailAndPassword } from 'firebase/auth';
+import { useUserUid } from '@/contexts/LoginUserState';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const onChangeEmail = () => {
-    setEmail(email);
+  const { updateUserUid } = useUserUid();
+
+  const navigate = useNavigate();
+
+  const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
-  const onChangePassword = () => {
-    setPassword(password);
+  const onChangePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  const onLoginHandler = async () => {
+    try {
+      // 로그인, user의 uid를 userUid로 전역 상태관리, Home으로 이동
+      await signInWithEmailAndPassword(auth, email, password).then((res: UserCredential) => {
+        updateUserUid(res.user.uid);
+        navigate('/');
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onMoveToSignUp = () => {
+    navigate('/sign-up-step-one');
   };
 
   return (
@@ -43,8 +56,8 @@ const Login = () => {
         />
       </InputsForm>
       <div className="flex flex-col gap-2">
-        <button>로그인</button>
-        <button>회원가입</button>
+        <button onClick={onLoginHandler}>로그인</button>
+        <button onClick={onMoveToSignUp}>회원가입</button>
       </div>
     </div>
   );
