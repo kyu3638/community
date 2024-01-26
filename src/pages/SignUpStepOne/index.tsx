@@ -13,7 +13,7 @@ const SignUpStepOne = () => {
   const [checkPassword, setCheckPassword] = useState('');
 
   // 전역 관리할 유저 메일을 업데이트할 setter
-  const { updateUserUid, isLogin } = useUserUid();
+  const { updateUserUid } = useUserUid();
 
   const navigate = useNavigate();
 
@@ -28,32 +28,48 @@ const SignUpStepOne = () => {
   };
 
   const signUpHandler = async () => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, password)
-        .then((res: UserCredential) => {
-          console.log(`res : `, res);
-          console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
-          console.log(`회원가입 2단계로 이동합니다.`);
-          const userId = res.user.uid;
-          const newUser: IUser = {
-            email: email,
-            nickName: '',
-            introduction: '',
-            profileImage: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          setDoc(doc(db, 'users', userId), newUser);
-          console.log(`로그인 여부 : `, isLogin);
-          updateUserUid(userId);
-          console.log(`userId : ${userId}`);
-          navigate('/sign-up-step-two');
-        })
-        .then(() => {
-          console.log(`로그인 여부 : `, isLogin);
-        });
-    } catch (error) {
-      console.log(error);
+    /** 비밀번호가 유효한지 체크하는 함수 */
+    const isValid = (pw: string, checkPw: string) => {
+      if (pw === checkPw) {
+        const pwCheck = /^(?!((?:[A-Za-z]+)|(?:[~!@#$%^&*()_+=]+)|(?:[0-9]+))$)[A-Za-z\d~!@#$%^&*()_+=]{10,}$/.test(pw);
+        if (pwCheck) {
+          console.log(`비밀번호가 10자리 이상이고 영문, 숫자, 특수문자 중 2가지 이상 조합으로 유효합니다.`);
+          return true;
+        } else {
+          alert('비밀번호는 영어 대문자, 소문자, 숫자, 특수문자 중 2종류 문자 조합으로 설정바랍니다.');
+          return false;
+        }
+      } else {
+        alert('비밀번호, 비밀번호 확인이 일치하지 않습니다.');
+        return false;
+      }
+    };
+    if (isValid(password, checkPassword)) {
+      try {
+        await createUserWithEmailAndPassword(auth, email, password)
+          .then((res: UserCredential) => {
+            console.log(`res : `, res);
+            console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
+            console.log(`회원가입 2단계로 이동합니다.`);
+            updateUserUid(res.user.uid);
+            return res.user.uid;
+          })
+          .then((uid) => {
+            console.log(`userId : ${uid}`);
+            const newUser: IUser = {
+              email: email,
+              nickName: '',
+              introduction: '',
+              profileImage: '',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            setDoc(doc(db, 'users', uid), newUser);
+            navigate('/sign-up-step-two');
+          });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
