@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ILoginInput, IInputsForm } from '@/types/common';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { auth } from '@/firebase/firebase';
-import { UserCredential, signInWithEmailAndPassword } from 'firebase/auth';
+import { UserCredential, browserSessionPersistence, setPersistence, signInWithEmailAndPassword } from 'firebase/auth';
 import { useUserUid } from '@/contexts/LoginUserState';
 
 const Login = () => {
@@ -11,6 +11,15 @@ const Login = () => {
 
   const { updateUserUid } = useUserUid();
 
+  const location = useLocation();
+  const from = location?.state?.redirectedFrom?.pathname || '/';
+  useEffect(() => {
+    if (from === '/') {
+      console.log('Home에서 왔거나 최초 접속 입니다.');
+    } else {
+      console.log(`로그인 없이 ${from}에 접속하려 했습니다.`);
+    }
+  }, []);
   const navigate = useNavigate();
 
   const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,11 +31,14 @@ const Login = () => {
 
   const onLoginHandler = async () => {
     try {
-      // 로그인, user의 uid를 userUid로 전역 상태관리, Home으로 이동
-      await signInWithEmailAndPassword(auth, email, password).then((res: UserCredential) => {
-        updateUserUid(res.user.uid);
-        navigate('/');
-      });
+      await setPersistence(auth, browserSessionPersistence)
+        .then(() => {
+          return signInWithEmailAndPassword(auth, email, password);
+        })
+        .then((res: UserCredential) => {
+          updateUserUid(res.user.uid);
+          navigate(from);
+        });
     } catch (error) {
       console.log(error);
     }
@@ -35,6 +47,18 @@ const Login = () => {
   const onMoveToSignUp = () => {
     navigate('/sign-up-step-one');
   };
+
+  /** 로그인 상태에서 접근되면 안되는 페이지들에서 내보내기 */
+  useEffect(() => {
+    const _session_key = `firebase:authUser:${import.meta.env.VITE_FIREBASE_API_KEY}:[DEFAULT]`;
+    const sessionData = sessionStorage.getItem(_session_key);
+    if (sessionData) {
+      const uid = JSON.parse(sessionData).uid;
+      updateUserUid(uid);
+      console.log(`접속 정보가 있으므로 ${from} 으로 이동합니다.`);
+      navigate(from);
+    }
+  }, []);
 
   return (
     <div className="h-lvh flex flex-col justify-center items-center">

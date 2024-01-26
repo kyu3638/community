@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { InputsForm, LoginInput } from '@/pages/Login';
-import { UserCredential, createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  UserCredential,
+  browserSessionPersistence,
+  createUserWithEmailAndPassword,
+  setPersistence,
+} from 'firebase/auth';
 import { auth, db } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
@@ -46,9 +51,11 @@ const SignUpStepOne = () => {
     };
     if (isValid(password, checkPassword)) {
       try {
-        await createUserWithEmailAndPassword(auth, email, password)
+        await setPersistence(auth, browserSessionPersistence)
+          .then(() => {
+            return createUserWithEmailAndPassword(auth, email, password);
+          })
           .then((res: UserCredential) => {
-            console.log(`res : `, res);
             console.log(`${res.user.email}님의 회원가입 1단계가 완료되었습니다.`);
             console.log(`회원가입 2단계로 이동합니다.`);
             updateUserUid(res.user.uid);
@@ -72,6 +79,17 @@ const SignUpStepOne = () => {
       }
     }
   };
+
+  /** 로그인 상태에서 접근되면 안되는 페이지들에서 내보내기 */
+  useEffect(() => {
+    const _session_key = `firebase:authUser:${import.meta.env.VITE_FIREBASE_API_KEY}:[DEFAULT]`;
+    const sessionData = sessionStorage.getItem(_session_key);
+    if (sessionData) {
+      const uid = JSON.parse(sessionData).uid;
+      updateUserUid(uid);
+      navigate('/');
+    }
+  }, []);
 
   return (
     <div className="h-lvh flex flex-col justify-center items-center">

@@ -2,7 +2,7 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, updateDoc } from 'firebase/firestore';
 import { InputsForm, LoginInput } from '../Login';
 import { useEffect, useState } from 'react';
-import { db, storage } from '@/firebase/firebase';
+import { auth, db, storage } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
@@ -11,13 +11,16 @@ const SignUpStepTwo = () => {
   const [introduction, setIntroduction] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState('');
-  const { userUid, isLogin } = useUserUid();
+  const { userUid, updateUserUid } = useUserUid();
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(`2단계 페이지에서 로그인 여부 : `, isLogin);
-    console.log(`userUid : ${userUid}`);
+    if (auth.currentUser) {
+      updateUserUid(auth.currentUser.uid);
+    } else {
+      navigate('/');
+    }
   }, []);
 
   const onChangeNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
