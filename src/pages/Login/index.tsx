@@ -61,7 +61,7 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="h-lvh flex flex-col justify-center items-center">
+    <div className="h-full flex flex-col justify-center items-center">
       <div>로그인</div>
       <InputsForm>
         <LoginInput

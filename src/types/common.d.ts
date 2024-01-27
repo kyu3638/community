@@ -5,10 +5,12 @@ export interface IChildrenProps {
 }
 
 export interface IUserUidContext {
-  userUid: string;
-  updateUserUid: (arg: string) => void;
+  userUid: UserUidType;
+  updateUserUid: (arg: UserUidType) => void;
   isLogin: boolean;
 }
+
+type UserUidType = string | null;
 
 interface IUser {
   email: string;

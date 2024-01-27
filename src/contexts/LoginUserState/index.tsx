@@ -2,7 +2,7 @@ import { createContext, useState, useContext } from 'react';
 import { IChildrenProps, IUserUidContext } from '@/types/common.ts';
 
 const UserUidContext = createContext<IUserUidContext>({
-  userUid: '',
+  userUid: null,
   updateUserUid: () => {},
   isLogin: false,
 });
@@ -10,9 +10,9 @@ const UserUidContext = createContext<IUserUidContext>({
 export const useUserUid = () => useContext(UserUidContext);
 
 export const UserUidProvider = ({ children }: IChildrenProps) => {
-  const [userUid, setUserUid] = useState('');
+  const [userUid, setUserUid] = useState<string | null>(null);
 
-  const updateUserUid = (val: string) => {
+  const updateUserUid = (val: string | null) => {
     setUserUid(val);
   };
 
