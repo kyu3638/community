@@ -1,19 +1,24 @@
 import { IUser } from '@/types/common';
-import React from 'react';
+import ContentWrap from '@/components/Wrap/ContentWrap';
+import AvatarInProfile from '@/components/Avatar/AvatarInProfile';
+import { Avatar } from '@/components/ui/avatar';
 
 interface IUserProps {
   user: IUser | null;
 }
 
 const Profile = ({ user }: IUserProps) => {
-  return (
-    <>
-      <img src={user?.profileImage} />
-      <div>{user?.email}</div>
-      <div>{user?.nickName}</div>
-      <div>{user?.introduction}</div>
-    </>
-  );
+  if (user) {
+    return (
+      <ContentWrap>
+        <Avatar className="w-48 h-48">
+          <AvatarInProfile avatarImageSrc={user.profileImage} />
+        </Avatar>
+        <div>닉네임 : {user.nickName}</div>
+        <div>소개말 : {user.introduction}</div>
+      </ContentWrap>
+    );
+  }
 };
 
 export default Profile;
