@@ -56,12 +56,14 @@ const SignUpStepTwo = () => {
         updatedAt: new Date(),
       };
       console.log(userUid);
-      const docRef = doc(db, 'users', userUid);
-      console.log(docRef);
-      await updateDoc(docRef, newData).then(() => {
-        console.log(`유저 정보가 업데이트 되었습니다.`);
-        navigate('/');
-      });
+      if (userUid) {
+        const docRef = doc(db, 'users', userUid);
+        console.log(docRef);
+        await updateDoc(docRef, newData).then(() => {
+          console.log(`유저 정보가 업데이트 되었습니다.`);
+          navigate('/');
+        });
+      }
     } catch (error) {
       console.log(error);
     }

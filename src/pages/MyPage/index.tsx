@@ -1,9 +1,10 @@
 import { IUser } from '@/types/common';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useUserUid } from '@/contexts/LoginUserState';
 import PageWrap from '@/components/Wrap/PageWrap';
+import Profile from './Profile';
 
 const MyPage = () => {
   const [user, setUser] = useState<IUser | null>(null);
@@ -28,10 +29,7 @@ const MyPage = () => {
 
   return (
     <PageWrap>
-      <img src={user?.profileImage} />
-      <div>{user?.email}</div>
-      <div>{user?.nickName}</div>
-      <div>{user?.introduction}</div>
+      <Profile user={user} />
     </PageWrap>
   );
 };
