@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { InputsForm, LoginInput } from '@/pages/Login';
 import {
   UserCredential,
@@ -64,12 +64,16 @@ const SignUpStepOne = () => {
           .then((uid) => {
             console.log(`userId : ${uid}`);
             const newUser: IUser = {
+              uid: uid,
               email: email,
               nickName: '',
               introduction: '',
               profileImage: '',
               createdAt: new Date(),
               updatedAt: new Date(),
+              like: [],
+              follower: [],
+              following: [],
             };
             setDoc(doc(db, 'users', uid), newUser);
             navigate('/sign-up-step-two');
@@ -80,16 +84,16 @@ const SignUpStepOne = () => {
     }
   };
 
-  /** 로그인 상태에서 접근되면 안되는 페이지들에서 내보내기 */
-  useEffect(() => {
-    const _session_key = `firebase:authUser:${import.meta.env.VITE_FIREBASE_API_KEY}:[DEFAULT]`;
-    const sessionData = sessionStorage.getItem(_session_key);
-    if (sessionData) {
-      const uid = JSON.parse(sessionData).uid;
-      updateUserUid(uid);
-      navigate('/');
-    }
-  }, []);
+  // /** 로그인 상태에서 접근되면 안되는 페이지들에서 내보내기 */
+  // useEffect(() => {
+  //   const _session_key = `firebase:authUser:${import.meta.env.VITE_FIREBASE_API_KEY}:[DEFAULT]`;
+  //   const sessionData = sessionStorage.getItem(_session_key);
+  //   if (sessionData) {
+  //     const uid = JSON.parse(sessionData).uid;
+  //     updateUserUid(uid);
+  //     navigate('/');
+  //   }
+  // }, []);
 
   return (
     <div className="h-lvh flex flex-col justify-center items-center">

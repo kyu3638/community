@@ -2,13 +2,16 @@ import { IUser } from '@/types/common';
 import { useEffect, useState } from 'react';
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { useUserUid } from '@/contexts/LoginUserState';
 import PageWrap from '@/components/Wrap/PageWrap';
-import Profile from './Profile';
+import Profile from '@/pages/MyPage/Profile';
+import { useParams } from 'react-router-dom';
 
-const MyPage = () => {
+const UserPage = () => {
   const [user, setUser] = useState<IUser | null>(null);
-  const { userUid } = useUserUid();
+  const { userUid } = useParams();
+  console.log(`불러올 유저의 uid : `, userUid);
+  console.log(useParams());
+
   /** db에서 유저를 불러옴 */
   useEffect(() => {
     // 렌더링 될 때 유저의 정보가 뿌려지도록..
@@ -34,4 +37,4 @@ const MyPage = () => {
   );
 };
 
-export default MyPage;
+export default UserPage;

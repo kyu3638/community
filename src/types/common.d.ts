@@ -5,18 +5,24 @@ export interface IChildrenProps {
 }
 
 export interface IUserUidContext {
-  userUid: string;
-  updateUserUid: (arg: string) => void;
+  userUid: UserUidType;
+  updateUserUid: (arg: UserUidType) => void;
   isLogin: boolean;
 }
 
+type UserUidType = string | null;
+
 interface IUser {
+  uid: string;
   email: string;
   nickName: string;
   introduction: string;
   profileImage: string;
   createdAt: Date;
   updatedAt: Date;
+  like: string[];
+  follower: string[];
+  following: string[];
 }
 
 interface ILoginInput {
