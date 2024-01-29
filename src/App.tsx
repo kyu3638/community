@@ -10,7 +10,7 @@ import NavBar from './layout/NavBar';
 import { useEffect } from 'react';
 import { useUserUid } from './contexts/LoginUserState';
 import SearchUser from './pages/SearchUser';
-import UserPage from './pages/UserPage/UserPage';
+import UserPage from './pages/UserPage';
 
 function App() {
   const { updateUserUid } = useUserUid();

@@ -9,7 +9,9 @@ import { useParams } from 'react-router-dom';
 const UserPage = () => {
   const [user, setUser] = useState<IUser | null>(null);
   const { userUid } = useParams();
-  console.log(userUid);
+  console.log(`불러올 유저의 uid : `, userUid);
+  console.log(useParams());
+
   /** db에서 유저를 불러옴 */
   useEffect(() => {
     // 렌더링 될 때 유저의 정보가 뿌려지도록..
