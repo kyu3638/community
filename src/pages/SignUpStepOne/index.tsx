@@ -70,6 +70,9 @@ const SignUpStepOne = () => {
               profileImage: '',
               createdAt: new Date(),
               updatedAt: new Date(),
+              like: 0,
+              follower: [],
+              following: [],
             };
             setDoc(doc(db, 'users', uid), newUser);
             navigate('/sign-up-step-two');

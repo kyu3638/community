@@ -19,6 +19,9 @@ interface IUser {
   profileImage: string;
   createdAt: Date;
   updatedAt: Date;
+  like: number;
+  follower: string[];
+  following: string[];
 }
 
 interface ILoginInput {
