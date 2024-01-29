@@ -25,8 +25,8 @@ const Profile = ({ user }: IUserProps) => {
       <div className="flex gap-10">
         <div>팔로워</div>
         <div>팔로잉</div>
-        <div>내가 쓴 글</div>
-        <div>내가 쓴 댓글</div>
+        <div>작성한 글</div>
+        <div>작성한 댓글</div>
       </div>
     </ContentWrap>
   );
