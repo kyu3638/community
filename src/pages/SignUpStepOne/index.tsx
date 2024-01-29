@@ -64,13 +64,14 @@ const SignUpStepOne = () => {
           .then((uid) => {
             console.log(`userId : ${uid}`);
             const newUser: IUser = {
+              uid: uid,
               email: email,
               nickName: '',
               introduction: '',
               profileImage: '',
               createdAt: new Date(),
               updatedAt: new Date(),
-              like: 0,
+              like: [],
               follower: [],
               following: [],
             };

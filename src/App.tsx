@@ -10,6 +10,7 @@ import NavBar from './layout/NavBar';
 import { useEffect } from 'react';
 import { useUserUid } from './contexts/LoginUserState';
 import SearchUser from './pages/SearchUser';
+import UserPage from './pages/UserPage/UserPage';
 
 function App() {
   const { updateUserUid } = useUserUid();
@@ -35,6 +36,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/search-user" element={<SearchUser />} />
+            <Route path="/search-user/:userUid" element={<UserPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

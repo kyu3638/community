@@ -13,13 +13,14 @@ export interface IUserUidContext {
 type UserUidType = string | null;
 
 interface IUser {
+  uid: string;
   email: string;
   nickName: string;
   introduction: string;
   profileImage: string;
   createdAt: Date;
   updatedAt: Date;
-  like: number;
+  like: string[];
   follower: string[];
   following: string[];
 }
