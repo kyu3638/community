@@ -69,8 +69,10 @@ const Login = () => {
     }
   }, []);
 
+  /** 구글 로그인 */
   const onLoginOAuth = async () => {
     try {
+      // session storage에 인증 상태를 저장
       await setPersistence(auth, browserSessionPersistence)
         .then(() => {
           return signInWithPopup(auth, provider);
@@ -83,7 +85,9 @@ const Login = () => {
           updateUserUid(res.user.uid);
           return res.user;
         })
+        // 이후 신규 유저인지 기존 유저인지 확인하는 과정
         .then((user) => {
+          // 유저 정보가 DB에 저장되어있는지를 확인
           const docRef = doc(db, 'users', user.uid);
           return getDoc(docRef);
         })
