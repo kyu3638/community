@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
-import { ILoginInput, IInputsForm } from '@/types/common';
+import { ILoginInput, IInputsForm, IUser } from '@/types/common';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { auth } from '@/firebase/firebase';
-import { UserCredential, browserSessionPersistence, setPersistence, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db, provider } from '@/firebase/firebase';
+import {
+  UserCredential,
+  browserSessionPersistence,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+} from 'firebase/auth';
 import { useUserUid } from '@/contexts/LoginUserState';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -60,6 +69,54 @@ const Login = () => {
     }
   }, []);
 
+  const onLoginOAuth = async () => {
+    try {
+      await setPersistence(auth, browserSessionPersistence)
+        .then(() => {
+          return signInWithPopup(auth, provider);
+        })
+        .then((result) => {
+          GoogleAuthProvider.credentialFromResult(result);
+          return result;
+        })
+        .then((res: UserCredential) => {
+          updateUserUid(res.user.uid);
+          return res.user;
+        })
+        .then((user) => {
+          const docRef = doc(db, 'users', user.uid);
+          return getDoc(docRef);
+        })
+        .then((res) => {
+          // 기존 유저 정보가 있는 경우 -> 홈
+          // 새로 가입한 유저 -> 회원가입 2단계
+          if (res.exists()) {
+            console.log(`소셜로그인, 기존 유저이기 때문에 홈으로 이동`);
+            navigate('/');
+          } else {
+            onAuthStateChanged(auth, (user) => {
+              const newUser: IUser = {
+                uid: user?.uid as string,
+                email: user?.email as string,
+                nickName: '',
+                introduction: '',
+                profileImage: '',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                like: [],
+                follower: [],
+                following: [],
+              };
+              setDoc(doc(db, 'users', user?.uid as string), newUser);
+              console.log(`소셜로그인, 신규 유저이기 때문에 회원가입 2단계로 이동`);
+              navigate('/sign-up-step-two');
+            });
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="h-full flex flex-col justify-center items-center">
       <div>로그인</div>
@@ -82,6 +139,7 @@ const Login = () => {
       <div className="flex flex-col gap-2">
         <button onClick={onLoginHandler}>로그인</button>
         <button onClick={onMoveToSignUp}>회원가입</button>
+        <button onClick={onLoginOAuth}>구글 로그인</button>
       </div>
     </div>
   );
