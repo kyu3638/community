@@ -29,7 +29,7 @@ const MyPage = () => {
 
   return (
     <PageWrap>
-      <Profile user={user} />
+      <Profile user={user!} />
     </PageWrap>
   );
 };

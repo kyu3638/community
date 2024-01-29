@@ -1,7 +1,7 @@
 import { AvatarImage } from '@radix-ui/react-avatar';
 
 interface IAvatarImageSrc {
-  avatarImageSrc: string | undefined;
+  avatarImageSrc: string;
 }
 
 const AvatarInProfile = ({ avatarImageSrc }: IAvatarImageSrc) => {
