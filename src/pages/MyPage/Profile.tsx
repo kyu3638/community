@@ -17,7 +17,6 @@ const Profile = ({ user }: IUserProps) => {
         <div>
           <div>닉네임 : {user?.nickName}</div>
           <div>소개말 : {user?.introduction}</div>
-          <div>좋아요 : {user?.like.length}</div>
           <div>팔로워 : {user?.follower.length}</div>
           <div>팔로잉 : {user?.following.length}</div>
         </div>

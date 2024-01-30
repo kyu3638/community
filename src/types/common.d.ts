@@ -20,7 +20,6 @@ interface IUser {
   profileImage: string;
   createdAt: Date;
   updatedAt: Date;
-  like: string[];
   follower: string[];
   following: string[];
 }

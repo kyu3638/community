@@ -94,7 +94,6 @@ const Login = () => {
           profileImage: '',
           createdAt: new Date(),
           updatedAt: new Date(),
-          like: [],
           follower: [],
           following: [],
         };

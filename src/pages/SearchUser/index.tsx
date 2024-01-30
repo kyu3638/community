@@ -5,7 +5,7 @@ import UserCardWrap from '@/components/Wrap/UserCardWrap';
 import { Avatar } from '@/components/ui/avatar';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -48,14 +48,6 @@ const SearchUser = () => {
     }
   };
 
-  const onFollowHandler = (targetUid: string) => {
-    console.log(targetUid);
-    setFollowing((prev) => ({
-      ...prev,
-      [targetUid]: !following?.[targetUid],
-    }));
-  };
-
   useEffect(() => {
     /** 페이지 렌더링 시 DB로부터 유저들의 데이터를 바다옵니다. */
     const getUsers = async () => {
@@ -84,20 +76,50 @@ const SearchUser = () => {
       const myDBRef = doc(db, 'users', userUid as string);
       const myDoc = await getDoc(myDBRef);
       const myFollowing = myDoc.get('following');
+      console.log('내 following 목록 ', myFollowing);
       const followingObj: IFollowingObj = {};
       users?.forEach((user) => {
-        if (myFollowing.includes(user)) {
+        if (myFollowing.includes(user.uid)) {
           followingObj[user.uid] = true;
-          console.log(`내가 팔로우하는 유저`);
         } else {
           followingObj[user.uid] = false;
-          console.log(`내가 팔로우하지 않는 유저`);
         }
       });
       setFollowing(followingObj);
     };
     getFollowing();
   }, [users]);
+
+  /** 해당 유저를 팔로우 하는 함수 */
+  const onFollowHandler = async (targetUid: string) => {
+    // 팔로우 여부를 변경하고
+    setFollowing((prev) => ({
+      ...prev,
+      [targetUid]: !following?.[targetUid],
+    }));
+
+    // 내 following과 target의 follower에 서로의 uid 추가
+    const myDocRef = doc(db, 'users', userUid as string);
+    await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
+
+    const targetDocRef = doc(db, 'users', targetUid);
+    await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
+  };
+
+  const onUnFollowHandler = async (targetUid: string) => {
+    // 팔로우 여부를 변경하고
+    setFollowing((prev) => ({
+      ...prev,
+      [targetUid]: !following?.[targetUid],
+    }));
+
+    // 내 following과 target의 follower에 서로의 uid 삭제
+    const myDocRef = doc(db, 'users', userUid as string);
+    await updateDoc(myDocRef, { following: arrayRemove(targetUid) });
+
+    const targetDocRef = doc(db, 'users', targetUid);
+    await updateDoc(targetDocRef, { follower: arrayRemove(userUid) });
+  };
 
   useEffect(() => {
     console.log(following);
@@ -125,13 +147,15 @@ const SearchUser = () => {
                   <div>
                     <div>닉네임 : {user.nickName}</div>
                     <div>소개말 : {user.introduction}</div>
-                    <div>좋아요 : {user.like.length}</div>
                     <div>팔로워 : {user.follower.length}</div>
                     <div>팔로잉 : {user.following.length}</div>
                   </div>
                   <div className="absolute right-3 top-3">
-                    <div>좋아요</div>
-                    <div onClick={() => onFollowHandler(user.uid)}>{following?.[user.uid] ? '언팔로우': '팔로우'}</div>
+                    {following?.[user.uid] ? (
+                      <div onClick={() => onUnFollowHandler(user.uid)}>언팔로우</div>
+                    ) : (
+                      <div onClick={() => onFollowHandler(user.uid)}>팔로우</div>
+                    )}
                   </div>
                 </UserCardWrap>
               );
