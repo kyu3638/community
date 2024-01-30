@@ -5,15 +5,23 @@ import UserCardWrap from '@/components/Wrap/UserCardWrap';
 import { Avatar } from '@/components/ui/avatar';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useUserUid } from '@/contexts/LoginUserState';
+
+interface IFollowingObj {
+  [userUid: string]: boolean;
+}
 
 const SearchUser = () => {
   const [users, setUsers] = useState<IUser[] | undefined>();
   const [searchNickName, setSearchNickName] = useState<string>('');
+  const [following, setFollowing] = useState<IFollowingObj>();
+
+  const { userUid } = useUserUid();
 
   const onChangeSearchNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchNickName(e.target.value);
@@ -62,6 +70,30 @@ const SearchUser = () => {
     getUsers();
   }, []);
 
+  // 내 정보에 대한 DB를 받아오고 내가 팔로우 하는 사람들의 정보로 follow하고 있는지 객체를 만든다.
+  useEffect(() => {
+    const getFollowing = async () => {
+      const myDBRef = doc(db, 'users', userUid as string);
+      const myDoc = await getDoc(myDBRef);
+      const myFollowing = myDoc.get('following');
+      const followingObj: IFollowingObj = {};
+      users?.forEach((user) => {
+        if (myFollowing.includes(user)) {
+          followingObj[user.uid] = true;
+          console.log(`내가 팔로우하는 유저`);
+        } else {
+          followingObj[user.uid] = false;
+          console.log(`내가 팔로우하지 않는 유저`);
+        }
+      });
+      setFollowing(followingObj);
+    };
+    getFollowing();
+  }, [users]);
+
+  useEffect(() => {
+    console.log(following);
+  }, [following]);
   return (
     <PageWrap>
       <ContentWrap>
