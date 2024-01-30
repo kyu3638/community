@@ -8,8 +8,6 @@ import {
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
-  onAuthStateChanged,
 } from 'firebase/auth';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -73,50 +71,36 @@ const Login = () => {
   const onLoginOAuth = async () => {
     try {
       // session storage에 인증 상태를 저장
-      await setPersistence(auth, browserSessionPersistence)
-        .then(() => {
-          return signInWithPopup(auth, provider);
-        })
-        .then((result) => {
-          GoogleAuthProvider.credentialFromResult(result);
-          return result;
-        })
-        .then((res: UserCredential) => {
-          updateUserUid(res.user.uid);
-          return res.user;
-        })
-        // 이후 신규 유저인지 기존 유저인지 확인하는 과정
-        .then((user) => {
-          // 유저 정보가 DB에 저장되어있는지를 확인
-          const docRef = doc(db, 'users', user.uid);
-          return getDoc(docRef);
-        })
-        .then((res) => {
-          // 기존 유저 정보가 있는 경우 -> 홈
-          // 새로 가입한 유저 -> 회원가입 2단계
-          if (res.exists()) {
-            console.log(`소셜로그인, 기존 유저이기 때문에 홈으로 이동`);
-            navigate('/');
-          } else {
-            onAuthStateChanged(auth, (user) => {
-              const newUser: IUser = {
-                uid: user?.uid as string,
-                email: user?.email as string,
-                nickName: '',
-                introduction: '',
-                profileImage: '',
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                like: [],
-                follower: [],
-                following: [],
-              };
-              setDoc(doc(db, 'users', user?.uid as string), newUser);
-              console.log(`소셜로그인, 신규 유저이기 때문에 회원가입 2단계로 이동`);
-              navigate('/sign-up-step-two');
-            });
-          }
-        });
+      const response = await setPersistence(auth, browserSessionPersistence).then(() => {
+        return signInWithPopup(auth, provider);
+      });
+      const user = response.user;
+      // user의 uid 전역 상태 관리
+      updateUserUid(user.uid);
+      const docRef = doc(db, 'users', user.uid);
+      // 해당 uid로 DB doc을 가져오는데
+      const userDB = await getDoc(docRef);
+      // 존재하면 기존유저, 없다면 신규 유저로 판단
+      if (userDB.data()) {
+        console.log(`소셜로그인, 기존 유저이기 때문에 홈으로 이동`);
+        navigate('/');
+      } else {
+        const newUser: IUser = {
+          uid: user?.uid as string,
+          email: user?.email as string,
+          nickName: '',
+          introduction: '',
+          profileImage: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          like: [],
+          follower: [],
+          following: [],
+        };
+        setDoc(doc(db, 'users', user?.uid as string), newUser);
+        console.log(`소셜로그인, 신규 유저이기 때문에 회원가입 2단계로 이동`);
+        navigate('/sign-up-step-two');
+      }
     } catch (error) {
       console.log(error);
     }
