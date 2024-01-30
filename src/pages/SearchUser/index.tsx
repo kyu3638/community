@@ -62,15 +62,6 @@ const SearchUser = () => {
     getUsers();
   }, []);
 
-  /** 유저 검색 후 초기화를 위해 "유저 찾기" 누르면 현재페이지 새로고침 */
-  // let currentPath = '/search-user';
-  // const location = useLocation();
-  // useEffect(() => {
-  //   if (currentPath === location.pathname) window.location.reload();
-
-  //   currentPath = location.pathname;
-  // }, [location]);
-
   return (
     <PageWrap>
       <ContentWrap>
