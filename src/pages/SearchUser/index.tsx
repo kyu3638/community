@@ -48,6 +48,14 @@ const SearchUser = () => {
     }
   };
 
+  const onFollowHandler = (targetUid: string) => {
+    console.log(targetUid);
+    setFollowing((prev) => ({
+      ...prev,
+      [targetUid]: !following?.[targetUid],
+    }));
+  };
+
   useEffect(() => {
     /** 페이지 렌더링 시 DB로부터 유저들의 데이터를 바다옵니다. */
     const getUsers = async () => {
@@ -94,6 +102,7 @@ const SearchUser = () => {
   useEffect(() => {
     console.log(following);
   }, [following]);
+
   return (
     <PageWrap>
       <ContentWrap>
@@ -114,15 +123,15 @@ const SearchUser = () => {
                     </Avatar>
                   </Link>
                   <div>
-                    <div>닉네임 : {user?.nickName}</div>
-                    <div>소개말 : {user?.introduction}</div>
-                    <div>좋아요 : {user?.like.length}</div>
-                    <div>팔로워 : {user?.follower.length}</div>
-                    <div>팔로잉 : {user?.following.length}</div>
+                    <div>닉네임 : {user.nickName}</div>
+                    <div>소개말 : {user.introduction}</div>
+                    <div>좋아요 : {user.like.length}</div>
+                    <div>팔로워 : {user.follower.length}</div>
+                    <div>팔로잉 : {user.following.length}</div>
                   </div>
                   <div className="absolute right-3 top-3">
                     <div>좋아요</div>
-                    <div>팔로우</div>
+                    <div onClick={() => onFollowHandler(user.uid)}>{following?.[user.uid] ? '언팔로우': '팔로우'}</div>
                   </div>
                 </UserCardWrap>
               );
