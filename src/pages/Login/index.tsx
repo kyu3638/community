@@ -27,6 +27,7 @@ const Login = () => {
       console.log(`로그인 없이 ${from}에 접속하려 했습니다.`);
     }
   }, []);
+
   const navigate = useNavigate();
 
   const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
