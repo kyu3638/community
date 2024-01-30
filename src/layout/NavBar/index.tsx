@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { auth } from '@/firebase/firebase';
 
 const NavBar = () => {
   const { isLogin, updateUserUid } = useUserUid();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -15,11 +17,21 @@ const NavBar = () => {
       console.log(err);
     }
   };
+
+  /** 네비게이션 "유저 찾기"를 누를 경우 무조건 새로고침 */
+  const onClickReload = () => {
+    if (location.pathname === '/search-user') {
+      navigate(0);
+    }
+  };
+
   return (
     <nav className="w-full h-24  flex items-center justify-between px-5">
       <Link to={'/'}>로고</Link>
       <div className="flex gap-4">
-        <Link to={'/search-user'}>유저 찾기</Link>
+        <Link to={'/search-user'} onClick={onClickReload}>
+          유저 찾기
+        </Link>
         <Link to={'/mypage'}>MyPage</Link>
       </div>
       {isLogin ? (
