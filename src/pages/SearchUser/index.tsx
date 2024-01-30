@@ -5,15 +5,23 @@ import UserCardWrap from '@/components/Wrap/UserCardWrap';
 import { Avatar } from '@/components/ui/avatar';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
-import { collection, getDocs } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useUserUid } from '@/contexts/LoginUserState';
+
+interface IFollowingObj {
+  [userUid: string]: boolean;
+}
 
 const SearchUser = () => {
   const [users, setUsers] = useState<IUser[] | undefined>();
   const [searchNickName, setSearchNickName] = useState<string>('');
+  const [following, setFollowing] = useState<IFollowingObj>();
+
+  const { userUid } = useUserUid();
 
   const onChangeSearchNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchNickName(e.target.value);
@@ -62,14 +70,60 @@ const SearchUser = () => {
     getUsers();
   }, []);
 
-  /** 유저 검색 후 초기화를 위해 "유저 찾기" 누르면 현재페이지 새로고침 */
-  // let currentPath = '/search-user';
-  // const location = useLocation();
-  // useEffect(() => {
-  //   if (currentPath === location.pathname) window.location.reload();
+  // 내 정보에 대한 DB를 받아오고 내가 팔로우 하는 사람들의 정보로 follow하고 있는지 객체를 만든다.
+  useEffect(() => {
+    const getFollowing = async () => {
+      const myDBRef = doc(db, 'users', userUid as string);
+      const myDoc = await getDoc(myDBRef);
+      const myFollowing = myDoc.get('following');
+      console.log('내 following 목록 ', myFollowing);
+      const followingObj: IFollowingObj = {};
+      users?.forEach((user) => {
+        if (myFollowing.includes(user.uid)) {
+          followingObj[user.uid] = true;
+        } else {
+          followingObj[user.uid] = false;
+        }
+      });
+      setFollowing(followingObj);
+    };
+    getFollowing();
+  }, [users]);
 
-  //   currentPath = location.pathname;
-  // }, [location]);
+  /** 해당 유저를 팔로우 하는 함수 */
+  const onFollowHandler = async (targetUid: string) => {
+    // 팔로우 여부를 변경하고
+    setFollowing((prev) => ({
+      ...prev,
+      [targetUid]: !following?.[targetUid],
+    }));
+
+    // 내 following과 target의 follower에 서로의 uid 추가
+    const myDocRef = doc(db, 'users', userUid as string);
+    await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
+
+    const targetDocRef = doc(db, 'users', targetUid);
+    await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
+  };
+
+  const onUnFollowHandler = async (targetUid: string) => {
+    // 팔로우 여부를 변경하고
+    setFollowing((prev) => ({
+      ...prev,
+      [targetUid]: !following?.[targetUid],
+    }));
+
+    // 내 following과 target의 follower에 서로의 uid 삭제
+    const myDocRef = doc(db, 'users', userUid as string);
+    await updateDoc(myDocRef, { following: arrayRemove(targetUid) });
+
+    const targetDocRef = doc(db, 'users', targetUid);
+    await updateDoc(targetDocRef, { follower: arrayRemove(userUid) });
+  };
+
+  useEffect(() => {
+    console.log(following);
+  }, [following]);
 
   return (
     <PageWrap>
@@ -91,15 +145,17 @@ const SearchUser = () => {
                     </Avatar>
                   </Link>
                   <div>
-                    <div>닉네임 : {user?.nickName}</div>
-                    <div>소개말 : {user?.introduction}</div>
-                    <div>좋아요 : {user?.like.length}</div>
-                    <div>팔로워 : {user?.follower.length}</div>
-                    <div>팔로잉 : {user?.following.length}</div>
+                    <div>닉네임 : {user.nickName}</div>
+                    <div>소개말 : {user.introduction}</div>
+                    <div>팔로워 : {user.follower.length}</div>
+                    <div>팔로잉 : {user.following.length}</div>
                   </div>
                   <div className="absolute right-3 top-3">
-                    <div>좋아요</div>
-                    <div>팔로우</div>
+                    {following?.[user.uid] ? (
+                      <div onClick={() => onUnFollowHandler(user.uid)}>언팔로우</div>
+                    ) : (
+                      <div onClick={() => onFollowHandler(user.uid)}>팔로우</div>
+                    )}
                   </div>
                 </UserCardWrap>
               );

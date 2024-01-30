@@ -71,7 +71,6 @@ const SignUpStepOne = () => {
               profileImage: '',
               createdAt: new Date(),
               updatedAt: new Date(),
-              like: [],
               follower: [],
               following: [],
             };
