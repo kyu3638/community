@@ -34,21 +34,7 @@ const SignUpStepOne = () => {
 
   const signUpHandler = async () => {
     /** 비밀번호가 유효한지 체크하는 함수 */
-    const isValid = (pw: string, checkPw: string) => {
-      if (pw === checkPw) {
-        const pwCheck = /^(?!((?:[A-Za-z]+)|(?:[~!@#$%^&*()_+=]+)|(?:[0-9]+))$)[A-Za-z\d~!@#$%^&*()_+=]{10,}$/.test(pw);
-        if (pwCheck) {
-          console.log(`비밀번호가 10자리 이상이고 영문, 숫자, 특수문자 중 2가지 이상 조합으로 유효합니다.`);
-          return true;
-        } else {
-          alert('비밀번호는 영어 대문자, 소문자, 숫자, 특수문자 중 2종류 문자 조합으로 설정바랍니다.');
-          return false;
-        }
-      } else {
-        alert('비밀번호, 비밀번호 확인이 일치하지 않습니다.');
-        return false;
-      }
-    };
+
     if (isValid(password, checkPassword)) {
       try {
         await setPersistence(auth, browserSessionPersistence)
@@ -128,3 +114,19 @@ const SignUpStepOne = () => {
 };
 
 export default SignUpStepOne;
+
+export const isValid = (pw: string, checkPw: string) => {
+  if (pw === checkPw) {
+    const pwCheck = /^(?!((?:[A-Za-z]+)|(?:[~!@#$%^&*()_+=]+)|(?:[0-9]+))$)[A-Za-z\d~!@#$%^&*()_+=]{10,}$/.test(pw);
+    if (pwCheck) {
+      console.log(`비밀번호가 10자리 이상이고 영문, 숫자, 특수문자 중 2가지 이상 조합으로 유효합니다.`);
+      return true;
+    } else {
+      alert('비밀번호는 영어 대문자, 소문자, 숫자, 특수문자 중 2종류 문자 조합으로 설정바랍니다.');
+      return false;
+    }
+  } else {
+    alert('비밀번호, 비밀번호 확인이 일치하지 않습니다.');
+    return false;
+  }
+};
