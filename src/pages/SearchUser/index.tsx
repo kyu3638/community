@@ -106,6 +106,7 @@ const SearchUser = () => {
     await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
   };
 
+  /** 해당 유저를 언팔로우 하는 함수 */
   const onUnFollowHandler = async (targetUid: string) => {
     // 팔로우 여부를 변경하고
     setFollowing((prev) => ({

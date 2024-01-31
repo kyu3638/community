@@ -10,9 +10,8 @@ const NavBar = () => {
 
   const handleLogout = async () => {
     try {
-      await auth.signOut().then(() => {
-        updateUserUid(null);
-      });
+      await auth.signOut();
+      updateUserUid(null);
     } catch (err) {
       console.log(err);
     }
