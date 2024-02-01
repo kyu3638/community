@@ -9,15 +9,14 @@ import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
+import { QueryFunctionContext, QueryKey, useQuery } from '@tanstack/react-query';
 
 interface IFollowingObj {
   [userUid: string]: boolean;
 }
 
 const SearchUser = () => {
-  const [users, setUsers] = useState<IUser[] | undefined>();
   const [searchNickName, setSearchNickName] = useState<string>('');
   const [following, setFollowing] = useState<IFollowingObj>();
 
@@ -27,48 +26,49 @@ const SearchUser = () => {
     setSearchNickName(e.target.value);
   };
 
-  const onSearchNickname = async () => {
+  /** 최초 페이지 접근 시 전체 유저를 렌더링 */
+  const fetchUsers = async () => {
     try {
-      const searchResult: IUser[] | undefined = [];
-      const querySanpshot = (await getDocs(collection(db, 'users'))).docs;
-      querySanpshot.forEach((doc) => {
-        const userNick = JSON.parse(JSON.stringify(doc.data())).nickName;
-        if (userNick.includes(searchNickName)) {
-          searchResult.push(JSON.parse(JSON.stringify(doc.data())));
-        }
-        console.log('searchNickName : ', searchResult);
+      const collectionRef = collection(db, 'users');
+      const querySnapshot = (await getDocs(collectionRef)).docs;
+      const users: IUser[] = [];
+      querySnapshot.forEach((user) => {
+        const userData = user.data() as IUser;
+        users.push(userData);
       });
-      if (searchResult.length === 0) {
-        alert('조회된 유저가 없습니다.');
-      } else {
-        setUsers(searchResult);
-      }
+      return users;
     } catch (error) {
       console.log(error);
     }
   };
+  // 검색어 없을 때만 활성화
+  const { data: users } = useQuery({ queryKey: ['allUsers'], queryFn: fetchUsers, enabled: !searchNickName });
 
-  useEffect(() => {
-    /** 페이지 렌더링 시 DB로부터 유저들의 데이터를 바다옵니다. */
-    const getUsers = async () => {
-      try {
-        const usersRef = collection(db, 'users');
-        const querySnapshot = await getDocs(usersRef);
-        const usersArr: IUser[] = [];
-        querySnapshot.forEach((user) => {
-          const userData = JSON.parse(JSON.stringify(user.data()));
-          userData.uid = user.id;
-          usersArr.push(userData);
-        });
-        if (usersArr) {
-          setUsers(usersArr);
+  /** 검색창 입력 시 검색어에 맞는 유저 실시간 렌더링 */
+  const fetchSearchedUsers = async ({ queryKey }: QueryFunctionContext<QueryKey>) => {
+    try {
+      const nick = queryKey[1] as string;
+      const collectionRef = collection(db, 'users');
+      const querySnapShot = (await getDocs(collectionRef)).docs;
+      const searched: IUser[] = [];
+      querySnapShot.forEach((user) => {
+        const userData = user.data() as IUser;
+        if (userData.nickName.includes(nick)) {
+          searched.push(userData);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getUsers();
-  }, []);
+      });
+      return searched;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { data: searchedUsers } = useQuery({
+    queryKey: ['searchedUser', searchNickName],
+    queryFn: fetchSearchedUsers,
+    enabled: !!searchNickName, // searchNickName이 입력되어 있을 때만 활성화 한다.
+  });
+
+  const usersToShow = searchNickName ? searchedUsers : users;
 
   // 내 정보에 대한 DB를 받아오고 내가 팔로우 하는 사람들의 정보로 follow하고 있는지 객체를 만든다.
   useEffect(() => {
@@ -131,13 +131,10 @@ const SearchUser = () => {
       <ContentWrap>
         <div className="flex">
           <Input type="text" placeholder="검색할 유저 ID" value={searchNickName} onChange={onChangeSearchNickName} />
-          <Button variant="outline" onClick={onSearchNickname}>
-            검색
-          </Button>
         </div>
         <div>
-          {users &&
-            users.map((user, idx) => {
+          {usersToShow &&
+            usersToShow.map((user, idx) => {
               return (
                 <UserCardWrap key={`search-user-${idx}`}>
                   <Link to={`/search-user/${user.uid}`}>
