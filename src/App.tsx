@@ -11,6 +11,9 @@ import { useEffect } from 'react';
 import { useUserUid } from './contexts/LoginUserState';
 import SearchUser from './pages/SearchUser';
 import UserPage from './pages/UserPage';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 function App() {
   const { updateUserUid } = useUserUid();
@@ -27,18 +30,20 @@ function App() {
   return (
     <div>
       <BrowserRouter>
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
-          <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/mypage" element={<MyPage />} />
-            <Route path="/search-user" element={<SearchUser />} />
-            <Route path="/search-user/:userUid" element={<UserPage />} />
-          </Route>
-        </Routes>
+        <QueryClientProvider client={queryClient}>
+          <NavBar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
+            <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/mypage" element={<MyPage />} />
+              <Route path="/search-user" element={<SearchUser />} />
+              <Route path="/search-user/:userUid" element={<UserPage />} />
+            </Route>
+          </Routes>
+        </QueryClientProvider>
       </BrowserRouter>
     </div>
   );
