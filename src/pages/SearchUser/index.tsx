@@ -21,6 +21,10 @@ interface IFollowingFuncArg {
   command: typeof arrayUnion | typeof arrayRemove;
 }
 
+interface IUsersArr {
+  users: string[] | undefined | null;
+}
+
 const SearchUser = () => {
   const [searchNickName, setSearchNickName] = useState<string>('');
 
@@ -83,19 +87,19 @@ const SearchUser = () => {
   // 카드로 렌더링 될 유저들
   const usersToShow = searchNickName ? searchedUsers : users;
 
-  const fetchFollowing = async () => {
+  const fetchFollowing = async ({ queryKey }: QueryFunctionContext<QueryKey>) => {
     try {
+      const arg = queryKey[1] as IUsersArr;
+      const users = arg.users;
       const myDocRef = doc(db, 'users', userUid as string);
       const myDoc = await getDoc(myDocRef);
       const myFollowing = myDoc.get('following');
-      console.log(`usersToShow`, usersToShow);
-      console.log(`myFollowing`, myFollowing);
       const followingObj: IFollowingObj = {};
-      usersToShow?.forEach((user) => {
-        if (myFollowing.includes(user.uid)) {
-          followingObj[user.uid] = true;
+      users?.forEach((uid) => {
+        if (myFollowing.includes(uid)) {
+          followingObj[uid] = true;
         } else {
-          followingObj[user.uid] = false;
+          followingObj[uid] = false;
         }
       });
       console.log(followingObj);
@@ -104,28 +108,11 @@ const SearchUser = () => {
       console.log(error);
     }
   };
+
   const { data: following } = useQuery({
-    queryKey: ['following'],
+    queryKey: ['following', { users: usersToShow?.map((user) => user.uid) }],
     queryFn: fetchFollowing,
-    staleTime: 5 * 1000,
-    enabled: !!usersToShow,
   });
-
-  /** 해당 유저를 팔로우 하는 함수 */
-  // const onFollowHandler = async (targetUid: string) => {
-  //   // 팔로우 여부를 변경하고
-  //   // setFollowing((prev) => ({
-  //   //   ...prev,
-  //   //   [targetUid]: !following?.[targetUid],
-  //   // }));
-
-  //   // 내 following과 target의 follower에 서로의 uid 추가
-  //   const myDocRef = doc(db, 'users', userUid as string);
-  //   await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
-
-  //   const targetDocRef = doc(db, 'users', targetUid);
-  //   await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
-  // };
 
   const followHandler = async ({ targetUid, command }: IFollowingFuncArg): Promise<void> => {
     const myDocRef = doc(db, 'users', userUid as string);
@@ -136,18 +123,6 @@ const SearchUser = () => {
   };
   const { mutate: editFollowing } = useMutation({
     mutationFn: followHandler,
-    // onSuccess: (_, varibales) => {
-    //   // 이전 쿼리를 무효화해 다시 쿼리를 불러오도록 강제함(POST와 GET 액션 수행)
-    //   queryClient.invalidateQueries({ queryKey: ['following'] });
-    //   // DB에서 following을 수정하는 POST 액션이 성공하면 following쿼리를 아래와 같이 변경해준다.(GET 액션 방지)
-    //   // queryClient.setQueryData(['following'], (prevFollowing: IFollowingObj) => {
-    //   //   console.log(prevFollowing);
-    //   //   return {
-    //   //     ...prevFollowing,
-    //   //     [varibales]: !prevFollowing[varibales],
-    //   //   };
-    //   // });
-    // },
     onMutate: async ({ targetUid }) => {
       // following 쿼리를 취소
       await queryClient.cancelQueries({ queryKey: ['following'] });
