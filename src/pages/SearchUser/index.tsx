@@ -10,15 +10,21 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { useUserUid } from '@/contexts/LoginUserState';
-import { QueryFunctionContext, QueryKey, useQuery } from '@tanstack/react-query';
+import { QueryFunctionContext, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface IFollowingObj {
   [userUid: string]: boolean;
 }
 
+interface IFollowingFuncArg {
+  targetUid: string;
+  command: typeof arrayUnion | typeof arrayRemove;
+}
+
 const SearchUser = () => {
   const [searchNickName, setSearchNickName] = useState<string>('');
-  const [following, setFollowing] = useState<IFollowingObj>();
+
+  const queryClient = useQueryClient();
 
   const { userUid } = useUserUid();
 
@@ -42,7 +48,12 @@ const SearchUser = () => {
     }
   };
   // 검색어 없을 때만 활성화
-  const { data: users } = useQuery({ queryKey: ['allUsers'], queryFn: fetchUsers, enabled: !searchNickName });
+  const { data: users } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: fetchUsers,
+    staleTime: 5 * 1000,
+    enabled: !searchNickName,
+  });
 
   /** 검색창 입력 시 검색어에 맞는 유저 실시간 렌더링 */
   const fetchSearchedUsers = async ({ queryKey }: QueryFunctionContext<QueryKey>) => {
@@ -65,66 +76,106 @@ const SearchUser = () => {
   const { data: searchedUsers } = useQuery({
     queryKey: ['searchedUser', searchNickName],
     queryFn: fetchSearchedUsers,
+    staleTime: 5 * 1000,
     enabled: !!searchNickName, // searchNickName이 입력되어 있을 때만 활성화 한다.
   });
 
+  // 카드로 렌더링 될 유저들
   const usersToShow = searchNickName ? searchedUsers : users;
 
-  // 내 정보에 대한 DB를 받아오고 내가 팔로우 하는 사람들의 정보로 follow하고 있는지 객체를 만든다.
-  useEffect(() => {
-    const getFollowing = async () => {
-      const myDBRef = doc(db, 'users', userUid as string);
-      const myDoc = await getDoc(myDBRef);
+  const fetchFollowing = async () => {
+    try {
+      const myDocRef = doc(db, 'users', userUid as string);
+      const myDoc = await getDoc(myDocRef);
       const myFollowing = myDoc.get('following');
-      console.log('내 following 목록 ', myFollowing);
+      console.log(`usersToShow`, usersToShow);
+      console.log(`myFollowing`, myFollowing);
       const followingObj: IFollowingObj = {};
-      users?.forEach((user) => {
+      usersToShow?.forEach((user) => {
         if (myFollowing.includes(user.uid)) {
           followingObj[user.uid] = true;
         } else {
           followingObj[user.uid] = false;
         }
       });
-      setFollowing(followingObj);
-    };
-    getFollowing();
-  }, [users]);
+      console.log(followingObj);
+      return followingObj;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { data: following } = useQuery({
+    queryKey: ['following'],
+    queryFn: fetchFollowing,
+    staleTime: 5 * 1000,
+    enabled: !!usersToShow,
+  });
 
   /** 해당 유저를 팔로우 하는 함수 */
-  const onFollowHandler = async (targetUid: string) => {
-    // 팔로우 여부를 변경하고
-    setFollowing((prev) => ({
-      ...prev,
-      [targetUid]: !following?.[targetUid],
-    }));
+  // const onFollowHandler = async (targetUid: string) => {
+  //   // 팔로우 여부를 변경하고
+  //   // setFollowing((prev) => ({
+  //   //   ...prev,
+  //   //   [targetUid]: !following?.[targetUid],
+  //   // }));
 
-    // 내 following과 target의 follower에 서로의 uid 추가
+  //   // 내 following과 target의 follower에 서로의 uid 추가
+  //   const myDocRef = doc(db, 'users', userUid as string);
+  //   await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
+
+  //   const targetDocRef = doc(db, 'users', targetUid);
+  //   await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
+  // };
+
+  const followHandler = async ({ targetUid, command }: IFollowingFuncArg): Promise<void> => {
     const myDocRef = doc(db, 'users', userUid as string);
-    await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
+    await updateDoc(myDocRef, { following: command(targetUid) });
 
     const targetDocRef = doc(db, 'users', targetUid);
-    await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
+    await updateDoc(targetDocRef, { follower: command(userUid) });
   };
-
-  /** 해당 유저를 언팔로우 하는 함수 */
-  const onUnFollowHandler = async (targetUid: string) => {
-    // 팔로우 여부를 변경하고
-    setFollowing((prev) => ({
-      ...prev,
-      [targetUid]: !following?.[targetUid],
-    }));
-
-    // 내 following과 target의 follower에 서로의 uid 삭제
-    const myDocRef = doc(db, 'users', userUid as string);
-    await updateDoc(myDocRef, { following: arrayRemove(targetUid) });
-
-    const targetDocRef = doc(db, 'users', targetUid);
-    await updateDoc(targetDocRef, { follower: arrayRemove(userUid) });
-  };
+  const { mutate: editFollowing } = useMutation({
+    mutationFn: followHandler,
+    // onSuccess: (_, varibales) => {
+    //   // 이전 쿼리를 무효화해 다시 쿼리를 불러오도록 강제함(POST와 GET 액션 수행)
+    //   queryClient.invalidateQueries({ queryKey: ['following'] });
+    //   // DB에서 following을 수정하는 POST 액션이 성공하면 following쿼리를 아래와 같이 변경해준다.(GET 액션 방지)
+    //   // queryClient.setQueryData(['following'], (prevFollowing: IFollowingObj) => {
+    //   //   console.log(prevFollowing);
+    //   //   return {
+    //   //     ...prevFollowing,
+    //   //     [varibales]: !prevFollowing[varibales],
+    //   //   };
+    //   // });
+    // },
+    onMutate: async ({ targetUid }) => {
+      // following 쿼리를 취소
+      await queryClient.cancelQueries({ queryKey: ['following'] });
+      // 이전 following 상태를 저장해두고
+      const previousFollowing = queryClient.getQueryData(['following']);
+      // 성공 시 진행되어야 하는 형태로 바꿔준다.
+      queryClient.setQueryData(['following'], (oldFollowing: IFollowingObj) => {
+        return { ...oldFollowing, [targetUid]: !oldFollowing[targetUid] };
+      });
+      // 이전 following 상태를 반환하여 오류 발생 시 이전 상태로 following 쿼리를 만든다.
+      return {
+        previousFollowing,
+      };
+    },
+    // 이전 following 상태를 받아 following 쿼리를 만든다.
+    onError: (_error, _product, context) => {
+      queryClient.setQueryData(['following'], context?.previousFollowing);
+    },
+    // 성공하든 실패하든 following 쿼리를 다시 불러온다
+    // 성공 시 optimistic updates로 이미 화면에는 db와 같은 내용이 출력되어 있을 것이다.
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['following'] });
+    },
+  });
 
   useEffect(() => {
     console.log(following);
-  }, [following]);
+  }, [usersToShow, following]);
 
   return (
     <PageWrap>
@@ -150,9 +201,10 @@ const SearchUser = () => {
                   </div>
                   <div className="absolute right-3 top-3">
                     {following?.[user.uid] ? (
-                      <div onClick={() => onUnFollowHandler(user.uid)}>언팔로우</div>
+                      <div onClick={() => editFollowing({ targetUid: user.uid, command: arrayRemove })}>언팔로우</div>
                     ) : (
-                      <div onClick={() => onFollowHandler(user.uid)}>팔로우</div>
+                      // <div onClick={() => onFollowHandler(user.uid)}>팔로우</div>
+                      <div onClick={() => editFollowing({ targetUid: user.uid, command: arrayUnion })}>팔로우</div>
                     )}
                   </div>
                 </UserCardWrap>

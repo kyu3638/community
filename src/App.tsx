@@ -12,6 +12,7 @@ import { useUserUid } from './contexts/LoginUserState';
 import SearchUser from './pages/SearchUser';
 import UserPage from './pages/UserPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ function App() {
               <Route path="/search-user/:userUid" element={<UserPage />} />
             </Route>
           </Routes>
+          <ReactQueryDevtools />
         </QueryClientProvider>
       </BrowserRouter>
     </div>
