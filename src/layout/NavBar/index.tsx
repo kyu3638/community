@@ -33,15 +33,20 @@ const NavBar = () => {
         </Link>
         <Link to={'/mypage'}>MyPage</Link>
       </div>
-      {isLogin ? (
-        <Button onClick={handleLogout} variant="outline">
-          로그아웃
-        </Button>
-      ) : (
+      <div>
         <Button asChild variant="outline">
-          <Link to={'/login'}>로그인</Link>
+          <Link to={'/posting'}>글 작성</Link>
         </Button>
-      )}
+        {isLogin ? (
+          <Button onClick={handleLogout} variant="outline">
+            로그아웃
+          </Button>
+        ) : (
+          <Button asChild variant="outline">
+            <Link to={'/login'}>로그인</Link>
+          </Button>
+        )}
+      </div>
     </nav>
   );
 };
