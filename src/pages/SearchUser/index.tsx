@@ -18,7 +18,7 @@ interface IFollowingObj {
 
 interface IFollowingFuncArg {
   targetUid: string;
-  command: typeof arrayUnion | typeof arrayRemove;
+  type: string;
 }
 
 interface IUsersArr {
@@ -55,7 +55,7 @@ const SearchUser = () => {
   const { data: users } = useQuery({
     queryKey: ['allUsers'],
     queryFn: fetchUsers,
-    staleTime: 5 * 1000,
+    staleTime: 5 * 60 * 1000,
     enabled: !searchNickName,
   });
 
@@ -80,7 +80,7 @@ const SearchUser = () => {
   const { data: searchedUsers } = useQuery({
     queryKey: ['searchedUser', searchNickName],
     queryFn: fetchSearchedUsers,
-    staleTime: 5 * 1000,
+    staleTime: 5 * 60 * 1000,
     enabled: !!searchNickName, // searchNickName이 입력되어 있을 때만 활성화 한다.
   });
 
@@ -114,31 +114,45 @@ const SearchUser = () => {
     queryFn: fetchFollowing,
   });
 
-  const followHandler = async ({ targetUid, command }: IFollowingFuncArg): Promise<void> => {
-    const myDocRef = doc(db, 'users', userUid as string);
-    await updateDoc(myDocRef, { following: command(targetUid) });
+  const followHandler = async ({ targetUid, type }: IFollowingFuncArg): Promise<void> => {
+    try {
+      const command = type === 'addFollowing' ? arrayUnion : arrayRemove;
 
-    const targetDocRef = doc(db, 'users', targetUid);
-    await updateDoc(targetDocRef, { follower: command(userUid) });
+      const myDocRef = doc(db, 'users', userUid as string);
+      await updateDoc(myDocRef, { following: command(targetUid) });
+
+      const targetDocRef = doc(db, 'users', targetUid);
+      await updateDoc(targetDocRef, { follower: command(userUid) });
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   const { mutate: editFollowing } = useMutation({
     mutationFn: followHandler,
     onMutate: async ({ targetUid }) => {
       // following 쿼리를 취소
-      await queryClient.cancelQueries({ queryKey: ['following'] });
+      await queryClient.cancelQueries({ queryKey: ['following', { users: usersToShow?.map((user) => user.uid) }] });
       // 이전 following 상태를 저장해두고
-      const previousFollowing = queryClient.getQueryData(['following']);
+      const previousFollowing = queryClient.getQueryData([
+        'following',
+        { users: usersToShow?.map((user) => user.uid) },
+      ]);
       // 성공 시 진행되어야 하는 형태로 바꿔준다.
-      queryClient.setQueryData(['following'], (oldFollowing: IFollowingObj) => {
-        return { ...oldFollowing, [targetUid]: !oldFollowing[targetUid] };
-      });
+      queryClient.setQueryData(
+        ['following', { users: usersToShow?.map((user) => user.uid) }],
+        (oldFollowing: IFollowingObj) => {
+          return { ...oldFollowing, [targetUid]: !oldFollowing[targetUid] };
+        }
+      );
       // 이전 following 상태를 반환하여 오류 발생 시 이전 상태로 following 쿼리를 만든다.
       return {
         previousFollowing,
       };
     },
     // 이전 following 상태를 받아 following 쿼리를 만든다.
-    onError: (_error, _product, context) => {
+    onError: (error, _product, context) => {
+      console.log(`error`, error);
       queryClient.setQueryData(['following'], context?.previousFollowing);
     },
     // 성공하든 실패하든 following 쿼리를 다시 불러온다
@@ -149,7 +163,7 @@ const SearchUser = () => {
   });
 
   useEffect(() => {
-    console.log(following);
+    console.log(`presentFollowing`, following);
   }, [usersToShow, following]);
 
   return (
@@ -176,10 +190,11 @@ const SearchUser = () => {
                   </div>
                   <div className="absolute right-3 top-3">
                     {following?.[user.uid] ? (
-                      <div onClick={() => editFollowing({ targetUid: user.uid, command: arrayRemove })}>언팔로우</div>
+                      <div onClick={() => editFollowing({ targetUid: user.uid, type: 'removeFollowing' })}>
+                        언팔로우
+                      </div>
                     ) : (
-                      // <div onClick={() => onFollowHandler(user.uid)}>팔로우</div>
-                      <div onClick={() => editFollowing({ targetUid: user.uid, command: arrayUnion })}>팔로우</div>
+                      <div onClick={() => editFollowing({ targetUid: user.uid, type: 'addFollowing' })}>팔로우</div>
                     )}
                   </div>
                 </UserCardWrap>
