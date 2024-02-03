@@ -9,17 +9,26 @@ import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
+import { QueryFunctionContext, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface IFollowingObj {
   [userUid: string]: boolean;
 }
 
+interface IFollowingFuncArg {
+  targetUid: string;
+  type: string;
+}
+
+interface IUsersArr {
+  users: string[] | undefined | null;
+}
+
 const SearchUser = () => {
-  const [users, setUsers] = useState<IUser[] | undefined>();
   const [searchNickName, setSearchNickName] = useState<string>('');
-  const [following, setFollowing] = useState<IFollowingObj>();
+
+  const queryClient = useQueryClient();
 
   const { userUid } = useUserUid();
 
@@ -27,117 +36,145 @@ const SearchUser = () => {
     setSearchNickName(e.target.value);
   };
 
-  const onSearchNickname = async () => {
+  /** 최초 페이지 접근 시 전체 유저를 렌더링 */
+  const fetchUsers = async () => {
     try {
-      const searchResult: IUser[] | undefined = [];
-      const querySanpshot = (await getDocs(collection(db, 'users'))).docs;
-      querySanpshot.forEach((doc) => {
-        const userNick = JSON.parse(JSON.stringify(doc.data())).nickName;
-        if (userNick.includes(searchNickName)) {
-          searchResult.push(JSON.parse(JSON.stringify(doc.data())));
-        }
-        console.log('searchNickName : ', searchResult);
+      const collectionRef = collection(db, 'users');
+      const querySnapshot = (await getDocs(collectionRef)).docs;
+      const users: IUser[] = [];
+      querySnapshot.forEach((user) => {
+        const userData = user.data() as IUser;
+        users.push(userData);
       });
-      if (searchResult.length === 0) {
-        alert('조회된 유저가 없습니다.');
-      } else {
-        setUsers(searchResult);
-      }
+      return users;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  // 검색어 없을 때만 활성화
+  const { data: users } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: fetchUsers,
+    staleTime: 5 * 60 * 1000,
+    enabled: !searchNickName,
+  });
+
+  /** 검색창 입력 시 검색어에 맞는 유저 실시간 렌더링 */
+  const fetchSearchedUsers = async ({ queryKey }: QueryFunctionContext<QueryKey>) => {
+    try {
+      const nick = queryKey[1] as string;
+      const collectionRef = collection(db, 'users');
+      const querySnapShot = (await getDocs(collectionRef)).docs;
+      const searched: IUser[] = [];
+      querySnapShot.forEach((user) => {
+        const userData = user.data() as IUser;
+        if (userData.nickName.includes(nick)) {
+          searched.push(userData);
+        }
+      });
+      return searched;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { data: searchedUsers } = useQuery({
+    queryKey: ['searchedUser', searchNickName],
+    queryFn: fetchSearchedUsers,
+    staleTime: 5 * 60 * 1000,
+    enabled: !!searchNickName, // searchNickName이 입력되어 있을 때만 활성화 한다.
+  });
+
+  // 카드로 렌더링 될 유저들
+  const usersToShow = searchNickName ? searchedUsers : users;
+
+  const fetchFollowing = async ({ queryKey }: QueryFunctionContext<QueryKey>) => {
+    try {
+      const arg = queryKey[1] as IUsersArr;
+      const users = arg.users;
+      const myDocRef = doc(db, 'users', userUid as string);
+      const myDoc = await getDoc(myDocRef);
+      const myFollowing = myDoc.get('following');
+      const followingObj: IFollowingObj = {};
+      users?.forEach((uid) => {
+        if (myFollowing.includes(uid)) {
+          followingObj[uid] = true;
+        } else {
+          followingObj[uid] = false;
+        }
+      });
+      console.log(followingObj);
+      return followingObj;
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    /** 페이지 렌더링 시 DB로부터 유저들의 데이터를 바다옵니다. */
-    const getUsers = async () => {
-      try {
-        const usersRef = collection(db, 'users');
-        const querySnapshot = await getDocs(usersRef);
-        const usersArr: IUser[] = [];
-        querySnapshot.forEach((user) => {
-          const userData = JSON.parse(JSON.stringify(user.data()));
-          userData.uid = user.id;
-          usersArr.push(userData);
-        });
-        if (usersArr) {
-          setUsers(usersArr);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getUsers();
-  }, []);
+  const { data: following } = useQuery({
+    queryKey: ['following', { users: usersToShow?.map((user) => user.uid) }],
+    queryFn: fetchFollowing,
+  });
 
-  // 내 정보에 대한 DB를 받아오고 내가 팔로우 하는 사람들의 정보로 follow하고 있는지 객체를 만든다.
-  useEffect(() => {
-    const getFollowing = async () => {
-      const myDBRef = doc(db, 'users', userUid as string);
-      const myDoc = await getDoc(myDBRef);
-      const myFollowing = myDoc.get('following');
-      console.log('내 following 목록 ', myFollowing);
-      const followingObj: IFollowingObj = {};
-      users?.forEach((user) => {
-        if (myFollowing.includes(user.uid)) {
-          followingObj[user.uid] = true;
-        } else {
-          followingObj[user.uid] = false;
-        }
-      });
-      setFollowing(followingObj);
-    };
-    getFollowing();
-  }, [users]);
+  const followHandler = async ({ targetUid, type }: IFollowingFuncArg): Promise<void> => {
+    try {
+      const command = type === 'addFollowing' ? arrayUnion : arrayRemove;
 
-  /** 해당 유저를 팔로우 하는 함수 */
-  const onFollowHandler = async (targetUid: string) => {
-    // 팔로우 여부를 변경하고
-    setFollowing((prev) => ({
-      ...prev,
-      [targetUid]: !following?.[targetUid],
-    }));
+      const myDocRef = doc(db, 'users', userUid as string);
+      await updateDoc(myDocRef, { following: command(targetUid) });
 
-    // 내 following과 target의 follower에 서로의 uid 추가
-    const myDocRef = doc(db, 'users', userUid as string);
-    await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
-
-    const targetDocRef = doc(db, 'users', targetUid);
-    await updateDoc(targetDocRef, { follower: arrayUnion(userUid) });
+      const targetDocRef = doc(db, 'users', targetUid);
+      await updateDoc(targetDocRef, { follower: command(userUid) });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  /** 해당 유저를 언팔로우 하는 함수 */
-  const onUnFollowHandler = async (targetUid: string) => {
-    // 팔로우 여부를 변경하고
-    setFollowing((prev) => ({
-      ...prev,
-      [targetUid]: !following?.[targetUid],
-    }));
-
-    // 내 following과 target의 follower에 서로의 uid 삭제
-    const myDocRef = doc(db, 'users', userUid as string);
-    await updateDoc(myDocRef, { following: arrayRemove(targetUid) });
-
-    const targetDocRef = doc(db, 'users', targetUid);
-    await updateDoc(targetDocRef, { follower: arrayRemove(userUid) });
-  };
+  const { mutate: editFollowing } = useMutation({
+    mutationFn: followHandler,
+    onMutate: async ({ targetUid }) => {
+      // following 쿼리를 취소
+      await queryClient.cancelQueries({ queryKey: ['following', { users: usersToShow?.map((user) => user.uid) }] });
+      // 이전 following 상태를 저장해두고
+      const previousFollowing = queryClient.getQueryData([
+        'following',
+        { users: usersToShow?.map((user) => user.uid) },
+      ]);
+      // 성공 시 진행되어야 하는 형태로 바꿔준다.
+      queryClient.setQueryData(
+        ['following', { users: usersToShow?.map((user) => user.uid) }],
+        (oldFollowing: IFollowingObj) => {
+          return { ...oldFollowing, [targetUid]: !oldFollowing[targetUid] };
+        }
+      );
+      // 이전 following 상태를 반환하여 오류 발생 시 이전 상태로 following 쿼리를 만든다.
+      return {
+        previousFollowing,
+      };
+    },
+    // 이전 following 상태를 받아 following 쿼리를 만든다.
+    onError: (error, _product, context) => {
+      console.log(`error`, error);
+      queryClient.setQueryData(['following'], context?.previousFollowing);
+    },
+    // 성공하든 실패하든 following 쿼리를 다시 불러온다
+    // 성공 시 optimistic updates로 이미 화면에는 db와 같은 내용이 출력되어 있을 것이다.
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['following'] });
+    },
+  });
 
   useEffect(() => {
-    console.log(following);
-  }, [following]);
+    console.log(`presentFollowing`, following);
+  }, [usersToShow, following]);
 
   return (
     <PageWrap>
       <ContentWrap>
         <div className="flex">
           <Input type="text" placeholder="검색할 유저 ID" value={searchNickName} onChange={onChangeSearchNickName} />
-          <Button variant="outline" onClick={onSearchNickname}>
-            검색
-          </Button>
         </div>
         <div>
-          {users &&
-            users.map((user, idx) => {
+          {usersToShow &&
+            usersToShow.map((user, idx) => {
               return (
                 <UserCardWrap key={`search-user-${idx}`}>
                   <Link to={`/search-user/${user.uid}`}>
@@ -153,9 +190,11 @@ const SearchUser = () => {
                   </div>
                   <div className="absolute right-3 top-3">
                     {following?.[user.uid] ? (
-                      <div onClick={() => onUnFollowHandler(user.uid)}>언팔로우</div>
+                      <div onClick={() => editFollowing({ targetUid: user.uid, type: 'removeFollowing' })}>
+                        언팔로우
+                      </div>
                     ) : (
-                      <div onClick={() => onFollowHandler(user.uid)}>팔로우</div>
+                      <div onClick={() => editFollowing({ targetUid: user.uid, type: 'addFollowing' })}>팔로우</div>
                     )}
                   </div>
                 </UserCardWrap>
