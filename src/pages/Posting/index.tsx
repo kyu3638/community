@@ -1,31 +1,89 @@
 import PageWrap from '@/components/Wrap/PageWrap';
-import 'froala-editor/css/froala_style.min.css';
-import 'froala-editor/css/froala_editor.pkgd.min.css';
-
-import FroalaEditorComponent from 'react-froala-wysiwyg';
 import EditorWrap from '@/components/Wrap/EditorWrap';
-import FroalaEditorView from 'react-froala-wysiwyg/FroalaEditorView';
-import { useState } from 'react';
+
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { useMemo, useRef, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { storage } from '@/firebase/firebase';
+import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
+import { useUserUid } from '@/contexts/LoginUserState';
+import { RangeStatic } from 'quill';
 
 const Posting = () => {
-  const [model, setModel] = useState('Example Set');
-  console.log(model);
+  const quillRef = useRef<ReactQuill>(null);
+  const [title, setTitle] = useState('');
+  const [value, setValue] = useState('');
 
-  const config = {
-    placeholderText: '게시글을 여기에 작성해주세요',
+  const { userUid } = useUserUid();
+
+  const handleImage = async () => {
+    console.log(`asdf`);
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+    console.log(input);
+    input.onchange = async () => {
+      const file = input.files ? input.files[0] : null;
+      console.log(file);
+      if (file) {
+        const storageRef = ref(storage, `postImage/${userUid}/${file.name}`);
+        await uploadBytes(storageRef, file);
+        const downLoadURL = await getDownloadURL(storageRef);
+        if (quillRef.current) {
+          const editor = quillRef.current.getEditor();
+          const range = editor.getSelection() as RangeStatic;
+          const newRange = { ...range, index: range.index + 1 };
+          editor.insertEmbed(range.index, 'image', downLoadURL);
+          editor.setSelection(newRange);
+        }
+      }
+    };
   };
 
-  const handleModelChange = (event: any) => {
-    setModel(event);
-  };
+  const modules = useMemo(() => {
+    return {
+      toolbar: {
+        container: [
+          [{ header: [1, 2, false] }],
+          ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+          [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+          ['link', 'image'],
+          ['clean'],
+        ],
+        handlers: {
+          image: handleImage,
+        },
+      },
+    };
+  }, []);
+
+  const formats = [
+    'header',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'blockquote',
+    'list',
+    'bullet',
+    'indent',
+    'link',
+    'image',
+  ];
+
+  const onPostUploadHandler = () => {};
 
   return (
     <PageWrap>
       <EditorWrap>
-        <FroalaEditorComponent tag="textarea" config={config} onModelChange={handleModelChange} />
-      </EditorWrap>
-      <EditorWrap>
-        <FroalaEditorView model={model} />
+        <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <ReactQuill ref={quillRef} theme="snow" value={value} onChange={setValue} modules={modules} formats={formats} />
+        <Button variant="outline" onClick={onPostUploadHandler}>
+          저장
+        </Button>
       </EditorWrap>
     </PageWrap>
   );
