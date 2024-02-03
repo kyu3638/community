@@ -6,15 +6,17 @@ import 'react-quill/dist/quill.snow.css';
 import { useMemo, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { storage } from '@/firebase/firebase';
+import { db, storage } from '@/firebase/firebase';
 import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
+import { addDoc, collection } from '@firebase/firestore';
+import { IFeed } from '@/types/common';
 
 const Posting = () => {
   const quillRef = useRef<ReactQuill>(null);
   const [title, setTitle] = useState('');
-  const [value, setValue] = useState('');
+  const [content, setContent] = useState('');
 
   const { userUid } = useUserUid();
 
@@ -24,10 +26,8 @@ const Posting = () => {
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
     input.click();
-    console.log(input);
     input.onchange = async () => {
       const file = input.files ? input.files[0] : null;
-      console.log(file);
       if (file) {
         const storageRef = ref(storage, `postImage/${userUid}/${file.name}`);
         await uploadBytes(storageRef, file);
@@ -74,13 +74,36 @@ const Posting = () => {
     'image',
   ];
 
-  const onPostUploadHandler = () => {};
+  const onPostUploadHandler = async () => {
+    try {
+      const newFeed: IFeed = {
+        uid: userUid,
+        title: title,
+        content: content,
+        comments: [],
+        like: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const docRef = collection(db, 'feeds');
+      await addDoc(docRef, newFeed);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <PageWrap>
       <EditorWrap>
         <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <ReactQuill ref={quillRef} theme="snow" value={value} onChange={setValue} modules={modules} formats={formats} />
+        <ReactQuill
+          ref={quillRef}
+          theme="snow"
+          value={content}
+          onChange={setContent}
+          modules={modules}
+          formats={formats}
+        />
         <Button variant="outline" onClick={onPostUploadHandler}>
           저장
         </Button>

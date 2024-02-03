@@ -10,7 +10,7 @@ export interface IUserUidContext {
   isLogin: boolean;
 }
 
-type UserUidType = string | null;
+type UserUidType = string;
 
 interface IUser {
   uid: string;
@@ -34,4 +34,21 @@ interface ILoginInput {
 
 interface IInputsForm {
   children: ReactNode;
+}
+
+interface IFeed {
+  uid: UserUidType;
+  title: string;
+  content: string;
+  comments: IComment[];
+  like: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface IComment {
+  uid: UserUidType;
+  comment: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
