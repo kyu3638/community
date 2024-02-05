@@ -7,6 +7,7 @@ import { collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
 import { Avatar } from '@/components/ui/avatar';
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
+import { Link } from 'react-router-dom';
 
 const Newsfeed = () => {
   const fetchNewsfeed = async () => {
@@ -38,9 +39,11 @@ const Newsfeed = () => {
           return (
             <ArticleWrap key={`newsfeed-${index}`}>
               <div className="flex items-center gap-5">
-                <Avatar className="w-12 h-12">
-                  <AvatarInCard avatarImageSrc={feed.profileImage} />
-                </Avatar>
+                <Link to={`/search-user/${feed.uid}`}>
+                  <Avatar className="w-12 h-12">
+                    <AvatarInCard avatarImageSrc={feed.profileImage} />
+                  </Avatar>
+                </Link>
                 <span className="font-bold">{feed.nickName}</span>
               </div>
               <div>{feed.title}</div>
