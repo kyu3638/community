@@ -14,8 +14,8 @@ import UserPage from './pages/UserPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Posting from './pages/Posting';
-import Newsfeed from './pages/Newsfeed';
 import Article from './pages/Article';
+import Newsfeed from './pages/NewsFeed';
 
 const queryClient = new QueryClient();
 

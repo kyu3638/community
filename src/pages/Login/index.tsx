@@ -92,6 +92,7 @@ const Login = () => {
           nickName: '',
           introduction: '',
           profileImage: '',
+          like: [],
           createdAt: new Date(),
           updatedAt: new Date(),
           follower: [],
