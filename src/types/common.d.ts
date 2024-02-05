@@ -22,6 +22,7 @@ interface IUser {
   updatedAt: Date;
   follower: string[];
   following: string[];
+  like: string[];
 }
 
 interface ILoginInput {
@@ -34,4 +35,24 @@ interface ILoginInput {
 
 interface IInputsForm {
   children: ReactNode;
+}
+
+interface IFeed {
+  uid: UserUidType;
+  nickName: string;
+  profileImage: string;
+  title: string;
+  content: string;
+  comments: IComment[];
+  like: string[];
+  images: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface IComment {
+  uid: UserUidType;
+  comment: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -59,6 +59,7 @@ const SignUpStepOne = () => {
               updatedAt: new Date(),
               follower: [],
               following: [],
+              like: [],
             };
             setDoc(doc(db, 'users', uid), newUser);
             navigate('/sign-up-step-two');

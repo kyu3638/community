@@ -28,20 +28,26 @@ const NavBar = () => {
     <nav className="w-full h-24  flex items-center justify-between px-5">
       <Link to={'/'}>로고</Link>
       <div className="flex gap-4">
+        <Link to={'/newsfeed'}>뉴스피드</Link>
         <Link to={'/search-user'} onClick={onClickReload}>
           유저 찾기
         </Link>
         <Link to={'/mypage'}>MyPage</Link>
       </div>
-      {isLogin ? (
-        <Button onClick={handleLogout} variant="outline">
-          로그아웃
-        </Button>
-      ) : (
+      <div>
         <Button asChild variant="outline">
-          <Link to={'/login'}>로그인</Link>
+          <Link to={'/posting'}>글 작성</Link>
         </Button>
-      )}
+        {isLogin ? (
+          <Button onClick={handleLogout} variant="outline">
+            로그아웃
+          </Button>
+        ) : (
+          <Button asChild variant="outline">
+            <Link to={'/login'}>로그인</Link>
+          </Button>
+        )}
+      </div>
     </nav>
   );
 };

@@ -13,6 +13,9 @@ import SearchUser from './pages/SearchUser';
 import UserPage from './pages/UserPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import Posting from './pages/Posting';
+import Newsfeed from './pages/Newsfeed';
+import Article from './pages/Article';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +42,9 @@ function App() {
             <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
             <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
             <Route element={<ProtectedRoute />}>
+              <Route path="/newsfeed" element={<Newsfeed />} />
+              <Route path="/article/:articleId" element={<Article />} />
+              <Route path="/posting" element={<Posting />} />
               <Route path="/mypage" element={<MyPage />} />
               <Route path="/search-user" element={<SearchUser />} />
               <Route path="/search-user/:userUid" element={<UserPage />} />
