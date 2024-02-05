@@ -22,6 +22,7 @@ interface IUser {
   updatedAt: Date;
   follower: string[];
   following: string[];
+  like: string[];
 }
 
 interface ILoginInput {
