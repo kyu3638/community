@@ -6,8 +6,7 @@ import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
 import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from '@firebase/firestore';
 import { Avatar } from '@radix-ui/react-avatar';
-import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 
 interface ILikeFuncArg {
