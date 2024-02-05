@@ -10,7 +10,7 @@ export interface IUserUidContext {
   isLogin: boolean;
 }
 
-type UserUidType = string;
+type UserUidType = string | null;
 
 interface IUser {
   uid: string;
@@ -42,6 +42,7 @@ interface IFeed {
   content: string;
   comments: IComment[];
   like: string[];
+  images: string[];
   createdAt: Date;
   updatedAt: Date;
 }

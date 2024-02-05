@@ -3,7 +3,7 @@ import EditorWrap from '@/components/Wrap/EditorWrap';
 
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { db, storage } from '@/firebase/firebase';
@@ -12,16 +12,18 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
 import { addDoc, collection } from '@firebase/firestore';
 import { IFeed } from '@/types/common';
+import { useNavigate } from 'react-router';
 
 const Posting = () => {
   const quillRef = useRef<ReactQuill>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const { userUid } = useUserUid();
 
   const handleImage = async () => {
-    console.log(`asdf`);
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
@@ -39,9 +41,14 @@ const Posting = () => {
           editor.insertEmbed(range.index, 'image', downLoadURL);
           editor.setSelection(newRange);
         }
+        setImages((prev) => [...prev, downLoadURL]);
       }
     };
   };
+
+  useEffect(() => {
+    console.log(images);
+  }, [images]);
 
   const modules = useMemo(() => {
     return {
@@ -82,11 +89,13 @@ const Posting = () => {
         content: content,
         comments: [],
         like: [],
+        images: images,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
       const docRef = collection(db, 'feeds');
       await addDoc(docRef, newFeed);
+      navigate('/newsfeed');
     } catch (error) {
       console.log(error);
     }
