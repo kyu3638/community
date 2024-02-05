@@ -2,7 +2,6 @@ import ArticleWrap from '@/components/Wrap/ArticleWrap';
 import ContentWrap from '@/components/Wrap/ContentWrap';
 import PageWrap from '@/components/Wrap/PageWrap';
 import { db } from '@/firebase/firebase';
-import { IFeed } from '@/types/common';
 import { collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
 import { Avatar } from '@/components/ui/avatar';
@@ -15,8 +14,9 @@ const Newsfeed = () => {
       const collectionRef = collection(db, 'feeds');
       const q = query(collectionRef, orderBy('updatedAt', 'desc'));
       const querySnapshot = (await getDocs(q)).docs;
-      const feeds = querySnapshot.map((feed) => feed.data()) as IFeed[];
-      return feeds;
+      return querySnapshot;
+      // const feeds = querySnapshot.map((feed) => feed.data()) as IFeed[];
+      // return feeds;
     } catch (error) {
       console.log(error);
     }
@@ -35,22 +35,25 @@ const Newsfeed = () => {
   return (
     <PageWrap>
       <ContentWrap>
-        {newsfeed?.map((feed, index) => {
+        {newsfeed?.map((query, index) => {
+          const feed = query.data();
+          const feedId = query.id;
+
           return (
             <ArticleWrap key={`newsfeed-${index}`}>
-              <div className="flex items-center gap-5">
-                <Link to={`/search-user/${feed.uid}`}>
+              <Link to={`/search-user/${feed.uid}`}>
+                <div className="flex items-center gap-5">
                   <Avatar className="w-12 h-12">
                     <AvatarInCard avatarImageSrc={feed.profileImage} />
                   </Avatar>
-                </Link>
-                <span className="font-bold">{feed.nickName}</span>
-              </div>
+                  <span className="font-bold">{feed.nickName}</span>
+                </div>
+              </Link>
               <div>{feed.title}</div>
-              <div>
+              <Link to={`/article/${feedId}`}>
                 {contentToText(feed.content)}
                 <span className="text-gray-500 font-bold"> ...더보기</span>
-              </div>
+              </Link>
             </ArticleWrap>
           );
         })}
