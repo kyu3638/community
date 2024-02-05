@@ -43,7 +43,7 @@ function App() {
             <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/newsfeed" element={<Newsfeed />} />
-              <Route path="/article/:id" element={<Article />} />
+              <Route path="/article/:articleId" element={<Article />} />
               <Route path="/posting" element={<Posting />} />
               <Route path="/mypage" element={<MyPage />} />
               <Route path="/search-user" element={<SearchUser />} />
