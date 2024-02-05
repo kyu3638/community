@@ -5,6 +5,8 @@ import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
 import { collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
+import { Avatar } from '@/components/ui/avatar';
+import AvatarInCard from '@/components/Avatar/AvatarInCard';
 
 const Newsfeed = () => {
   const fetchNewsfeed = async () => {
@@ -23,14 +25,29 @@ const Newsfeed = () => {
     queryFn: fetchNewsfeed,
   });
 
+  const contentToText = (content: string) => {
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    return div.textContent?.substring(0, 100);
+  };
+
   return (
     <PageWrap>
       <ContentWrap>
         {newsfeed?.map((feed, index) => {
           return (
             <ArticleWrap key={`newsfeed-${index}`}>
+              <div className="flex items-center gap-5">
+                <Avatar className="w-12 h-12">
+                  <AvatarInCard avatarImageSrc={feed.profileImage} />
+                </Avatar>
+                <span className="font-bold">{feed.nickName}</span>
+              </div>
               <div>{feed.title}</div>
-              <div dangerouslySetInnerHTML={{ __html: feed.content }}></div>
+              <div>
+                {contentToText(feed.content)}
+                <span className="text-gray-500 font-bold"> ...더보기</span>
+              </div>
             </ArticleWrap>
           );
         })}

@@ -10,18 +10,31 @@ import { db, storage } from '@/firebase/firebase';
 import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
-import { addDoc, collection } from '@firebase/firestore';
-import { IFeed } from '@/types/common';
+import { addDoc, collection, doc, getDoc } from '@firebase/firestore';
+import { IFeed, IUser } from '@/types/common';
 import { useNavigate } from 'react-router';
 
 const Posting = () => {
   const quillRef = useRef<ReactQuill>(null);
+  const [nickName, setNickName] = useState('');
+  const [profileImage, setProfileImage] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const { userUid } = useUserUid();
+
+  useEffect(() => {
+    // 유저 닉네임과 이미지 url 불러오기
+    const getUser = async () => {
+      const userRef = doc(db, 'users', userUid as string);
+      const user = (await getDoc(userRef)).data() as IUser;
+      setNickName(user.nickName);
+      setProfileImage(user.profileImage);
+    };
+    getUser();
+  }, []);
 
   const handleImage = async () => {
     const input = document.createElement('input');
@@ -85,6 +98,8 @@ const Posting = () => {
     try {
       const newFeed: IFeed = {
         uid: userUid,
+        nickName: nickName,
+        profileImage: profileImage,
         title: title,
         content: content,
         comments: [],

@@ -38,6 +38,8 @@ interface IInputsForm {
 
 interface IFeed {
   uid: UserUidType;
+  nickName: string;
+  profileImage: string;
   title: string;
   content: string;
   comments: IComment[];
