@@ -6,7 +6,7 @@ import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
 import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from '@firebase/firestore';
 import { Avatar } from '@radix-ui/react-avatar';
-import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
@@ -17,16 +17,14 @@ interface ILikeFuncArg {
 const Article = () => {
   const params = useParams();
   const articleId = params.articleId;
-  const [likeArticle, setLikeArticle] = useState(false);
 
   const { userUid } = useUserUid();
+
+  const queryClient = useQueryClient();
 
   const fetchArticle = async () => {
     const articleRef = doc(db, 'feeds', articleId as string);
     const article = (await getDoc(articleRef)).data() as IFeed;
-    if (article.like.includes(userUid as string)) {
-      setLikeArticle(true);
-    }
     return article;
   };
   const { data: article } = useQuery({ queryKey: ['article'], queryFn: fetchArticle });
@@ -46,6 +44,28 @@ const Article = () => {
   };
   const { mutate: onLikeArticle } = useMutation({
     mutationFn: articleLikeHandler,
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['article'] });
+      const previousArticleState = queryClient.getQueryData(['article']);
+      queryClient.setQueryData(['article'], (oldState: IFeed) => {
+        let newLike = [];
+        if (oldState.like.includes(userUid as string)) {
+          newLike = oldState.like.filter((uid) => uid !== userUid);
+        } else {
+          oldState.like.push(userUid as string);
+          newLike = oldState.like;
+        }
+        return { ...oldState, like: newLike };
+      });
+      return { previousArticleState };
+    },
+    onError: (error, _product, context) => {
+      console.log(error);
+      queryClient.setQueryData(['article'], context?.previousArticleState);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['article'] });
+    },
   });
 
   return (
@@ -59,7 +79,7 @@ const Article = () => {
         </div>
         <div>{article?.title}</div>
         <div dangerouslySetInnerHTML={{ __html: article?.content as string }} />
-        {likeArticle ? (
+        {article?.like.includes(userUid as string) ? (
           <div onClick={() => onLikeArticle({ type: 'removeLike' })}>안좋아요^^</div>
         ) : (
           <div onClick={() => onLikeArticle({ type: 'addLike' })}>좋아요</div>
