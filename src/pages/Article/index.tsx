@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
-import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from '@firebase/firestore';
+import { arrayRemove, arrayUnion, deleteDoc, doc, getDoc, updateDoc } from '@firebase/firestore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 
 interface ILikeFuncArg {
   type: string;
@@ -22,6 +23,8 @@ const Article = () => {
   const { userUid } = useUserUid();
 
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate();
 
   const fetchArticle = async (): Promise<IFeed> => {
     const articleRef = doc(db, 'feeds', articleId as string);
@@ -72,9 +75,24 @@ const Article = () => {
     },
   });
 
-  useEffect(() => {
-    console.table(article);
-  }, [article]);
+  const onRemoveArticle = async () => {
+    try {
+      const articleRef = doc(db, 'feeds', articleId as string);
+      await deleteDoc(articleRef);
+      console.log(`articleId : ${articleId}에 해당하는 게시글이 삭제 되었습니다.`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { mutate: removeArticle } = useMutation({
+    mutationFn: onRemoveArticle,
+    // 삭제 성공 시 newsFeed로 이동
+    onSuccess: () => {
+      console.log(`sssssss`);
+      queryClient.invalidateQueries({ queryKey: ['article'] });
+      navigate('/newsfeed');
+    },
+  });
 
   return (
     <PageWrap>
@@ -93,7 +111,14 @@ const Article = () => {
             <div onClick={() => onLikeArticle({ type: 'addLike' })}>좋아요</div>
           )}
         </div>
-        {myArticle && <Button>수정</Button>}
+        {myArticle && (
+          <div>
+            <Link to={`/posting`} state={{ mode: 'edit', article: article, articleId: articleId }}>
+              <Button>수정</Button>
+            </Link>
+            <Button onClick={() => removeArticle()}>삭제</Button>
+          </div>
+        )}
       </ContentWrap>
     </PageWrap>
   );

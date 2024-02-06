@@ -10,18 +10,27 @@ import { db, storage } from '@/firebase/firebase';
 import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
-import { addDoc, collection, doc, getDoc } from '@firebase/firestore';
+import { addDoc, collection, doc, getDoc, updateDoc } from '@firebase/firestore';
 import { IFeed, IUser } from '@/types/common';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const Posting = () => {
+  const queryClient = useQueryClient();
+  const location = useLocation();
+  const { mode, article, articleId } = location.state || {};
   const quillRef = useRef<ReactQuill>(null);
-  const [nickName, setNickName] = useState('');
-  const [profileImage, setProfileImage] = useState('');
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+  const [nickName, setNickName] = useState(article?.nickName || '');
+  const [profileImage, setProfileImage] = useState(article?.profileImage || '');
+  const [title, setTitle] = useState(article?.title || '');
+  const [content, setContent] = useState(article?.content || '');
+  const [images, setImages] = useState<string[]>(article?.images || []);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log(mode);
+    console.log(article);
+  }, []);
 
   const { userUid } = useUserUid();
 
@@ -96,25 +105,42 @@ const Posting = () => {
 
   const onPostUploadHandler = async () => {
     try {
+      console.log(title);
+      console.log(content);
       const newFeed: IFeed = {
         uid: userUid,
         nickName: nickName,
         profileImage: profileImage,
         title: title,
         content: content,
-        comments: [],
-        like: [],
+        comments: article?.comments || [],
+        like: article?.like || [],
         images: images,
-        createdAt: new Date(),
+        createdAt: article?.createdAt || new Date(),
         updatedAt: new Date(),
       };
-      const docRef = collection(db, 'feeds');
-      await addDoc(docRef, newFeed);
+      // 새글 생성일 경우 새로운 doc add
+      if (mode === 'create') {
+        const docRef = collection(db, 'feeds');
+        await addDoc(docRef, newFeed);
+      }
+      // 수정일 경우 기존 doc update
+      if (mode === 'edit') {
+        const docRef = doc(db, 'feeds', articleId);
+        await updateDoc(docRef, { ...newFeed });
+        console.log(`게시글이 업데이트 되었습니다.`);
+      }
       navigate('/newsfeed');
     } catch (error) {
       console.log(error);
     }
   };
+  const { mutate: uploadNewfeed } = useMutation({
+    mutationFn: onPostUploadHandler,
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['article'] });
+    },
+  });
 
   return (
     <PageWrap>
@@ -128,9 +154,15 @@ const Posting = () => {
           modules={modules}
           formats={formats}
         />
-        <Button variant="outline" onClick={onPostUploadHandler}>
-          저장
-        </Button>
+        {mode === 'create' ? (
+          <Button variant="outline" onClick={() => uploadNewfeed()}>
+            저장
+          </Button>
+        ) : (
+          <Button variant="outline" onClick={() => uploadNewfeed()}>
+            수정
+          </Button>
+        )}
       </EditorWrap>
     </PageWrap>
   );

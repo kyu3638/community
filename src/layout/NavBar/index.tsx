@@ -36,7 +36,9 @@ const NavBar = () => {
       </div>
       <div>
         <Button asChild variant="outline">
-          <Link to={'/posting'}>글 작성</Link>
+          <Link to={'/posting'} state={{ mode: 'create' }}>
+            글 작성
+          </Link>
         </Button>
         {isLogin ? (
           <Button onClick={handleLogout} variant="outline">
