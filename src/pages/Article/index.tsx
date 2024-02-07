@@ -1,5 +1,4 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
-import CommentWrap from '@/components/Wrap/CommentWrap';
 import ContentWrap from '@/components/Wrap/ContentWrap';
 import PageWrap from '@/components/Wrap/PageWrap';
 import { Button } from '@/components/ui/button';
@@ -121,9 +120,7 @@ const Article = () => {
             <Button onClick={() => removeArticle()}>삭제</Button>
           </div>
         )}
-        <CommentWrap>
-          <Comments articleId={articleId} />
-        </CommentWrap>
+        <Comments articleId={articleId} userUid={userUid} />
       </ContentWrap>
     </PageWrap>
   );

@@ -13,8 +13,6 @@ const UserPage = () => {
   const fetchUser = async (): Promise<IUser | undefined> => {
     try {
       const res = await getDoc(doc(db, 'users', userUid as string));
-      console.log(res);
-      console.log(res.data());
       const user = res.data() as IUser;
       return user;
     } catch (error) {
