@@ -1,4 +1,5 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
+import CommentWrap from '@/components/Wrap/CommentWrap';
 import ContentWrap from '@/components/Wrap/ContentWrap';
 import PageWrap from '@/components/Wrap/PageWrap';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
+import Comments from './Comments';
 
 interface ILikeFuncArg {
   type: string;
@@ -17,7 +19,7 @@ interface ILikeFuncArg {
 
 const Article = () => {
   const params = useParams();
-  const articleId = params.articleId;
+  const articleId = params.articleId as string;
   const [myArticle, setMyArticle] = useState(false);
 
   const { userUid } = useUserUid();
@@ -119,6 +121,9 @@ const Article = () => {
             <Button onClick={() => removeArticle()}>삭제</Button>
           </div>
         )}
+        <CommentWrap>
+          <Comments articleId={articleId} />
+        </CommentWrap>
       </ContentWrap>
     </PageWrap>
   );
