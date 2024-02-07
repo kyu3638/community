@@ -158,6 +158,8 @@ const SearchUser = () => {
     // 성공 시 optimistic updates로 이미 화면에는 db와 같은 내용이 출력되어 있을 것이다.
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['searchedUser'] });
     },
   });
 
