@@ -4,7 +4,6 @@ import PageWrap from '@/components/Wrap/PageWrap';
 import { db } from '@/firebase/firebase';
 import { collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
-import { Avatar } from '@/components/ui/avatar';
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Link } from 'react-router-dom';
 
@@ -43,9 +42,7 @@ const Newsfeed = () => {
             <ArticleWrap key={`newsfeed-${index}`}>
               <Link to={`/search-user/${feed.uid}`}>
                 <div className="flex items-center gap-5">
-                  <Avatar className="w-12 h-12">
-                    <AvatarInCard avatarImageSrc={feed.profileImage} />
-                  </Avatar>
+                  <AvatarInCard avatarImageSrc={feed.profileImage} />
                   <span className="font-bold">{feed.nickName}</span>
                 </div>
               </Link>

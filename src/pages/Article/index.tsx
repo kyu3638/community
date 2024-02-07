@@ -1,14 +1,15 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import ContentWrap from '@/components/Wrap/ContentWrap';
 import PageWrap from '@/components/Wrap/PageWrap';
+import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
-import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from '@firebase/firestore';
-import { Avatar } from '@radix-ui/react-avatar';
-import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { arrayRemove, arrayUnion, deleteDoc, doc, getDoc, updateDoc } from '@firebase/firestore';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 
 interface ILikeFuncArg {
   type: string;
@@ -17,14 +18,20 @@ interface ILikeFuncArg {
 const Article = () => {
   const params = useParams();
   const articleId = params.articleId;
+  const [myArticle, setMyArticle] = useState(false);
 
   const { userUid } = useUserUid();
 
   const queryClient = useQueryClient();
 
-  const fetchArticle = async () => {
+  const navigate = useNavigate();
+
+  const fetchArticle = async (): Promise<IFeed> => {
     const articleRef = doc(db, 'feeds', articleId as string);
     const article = (await getDoc(articleRef)).data() as IFeed;
+    if (userUid === article.uid) {
+      setMyArticle(true);
+    }
     return article;
   };
   const { data: article } = useQuery({ queryKey: ['article'], queryFn: fetchArticle });
@@ -68,21 +75,49 @@ const Article = () => {
     },
   });
 
+  const onRemoveArticle = async () => {
+    try {
+      const articleRef = doc(db, 'feeds', articleId as string);
+      await deleteDoc(articleRef);
+      console.log(`articleId : ${articleId}에 해당하는 게시글이 삭제 되었습니다.`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { mutate: removeArticle } = useMutation({
+    mutationFn: onRemoveArticle,
+    // 삭제 성공 시 newsFeed로 이동
+    onSuccess: () => {
+      console.log(`sssssss`);
+      queryClient.invalidateQueries({ queryKey: ['article'] });
+      navigate('/newsfeed');
+    },
+  });
+
   return (
     <PageWrap>
       <ContentWrap>
         <div className="flex items-center gap-5">
-          <Avatar className="w-12 h-12">
-            <AvatarInCard avatarImageSrc={article?.profileImage} />
-          </Avatar>
+          <AvatarInCard avatarImageSrc={article?.profileImage} />
           <div>{article?.nickName}</div>
         </div>
         <div>{article?.title}</div>
         <div dangerouslySetInnerHTML={{ __html: article?.content as string }} />
-        {article?.like.includes(userUid as string) ? (
-          <div onClick={() => onLikeArticle({ type: 'removeLike' })}>안좋아요^^</div>
-        ) : (
-          <div onClick={() => onLikeArticle({ type: 'addLike' })}>좋아요</div>
+        <div className="flex gap-10">
+          <div>{article?.like.length}</div>
+          {article?.like.includes(userUid as string) ? (
+            <div onClick={() => onLikeArticle({ type: 'removeLike' })}>안좋아요^^</div>
+          ) : (
+            <div onClick={() => onLikeArticle({ type: 'addLike' })}>좋아요</div>
+          )}
+        </div>
+        {myArticle && (
+          <div>
+            <Link to={`/posting`} state={{ mode: 'edit', article: article, articleId: articleId }}>
+              <Button>수정</Button>
+            </Link>
+            <Button onClick={() => removeArticle()}>삭제</Button>
+          </div>
         )}
       </ContentWrap>
     </PageWrap>

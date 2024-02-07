@@ -2,7 +2,6 @@ import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import ContentWrap from '@/components/Wrap/ContentWrap';
 import PageWrap from '@/components/Wrap/PageWrap';
 import UserCardWrap from '@/components/Wrap/UserCardWrap';
-import { Avatar } from '@/components/ui/avatar';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
@@ -159,6 +158,8 @@ const SearchUser = () => {
     // 성공 시 optimistic updates로 이미 화면에는 db와 같은 내용이 출력되어 있을 것이다.
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['searchedUser'] });
     },
   });
 
@@ -178,9 +179,7 @@ const SearchUser = () => {
               return (
                 <UserCardWrap key={`search-user-${idx}`}>
                   <Link to={`/search-user/${user.uid}`}>
-                    <Avatar className="w-24 h-24">
-                      <AvatarInCard avatarImageSrc={user.profileImage} />
-                    </Avatar>
+                    <AvatarInCard avatarImageSrc={user.profileImage} />
                   </Link>
                   <div>
                     <div>닉네임 : {user.nickName}</div>
