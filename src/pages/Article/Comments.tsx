@@ -4,7 +4,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
 import { QueryDocumentSnapshot, addDoc, collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
-import { BlobOptions } from 'buffer';
 import { ChangeEvent, useState } from 'react';
 
 interface ICommentsProps {
@@ -27,7 +26,7 @@ interface IComment {
 
 interface IParentComment extends IComment {
   commentId: string;
-  children: string[];
+  children: IComment[];
 }
 
 interface IChildCommentState {
@@ -47,21 +46,34 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
     const q = query(commentsRef, orderBy('createdAt', 'desc'));
     const allComments = (await getDocs(q)).docs as QueryDocumentSnapshot[];
     const parentComments: IParentComment[] = [];
-    const childComments = [];
+    const childComments: IComment[] = [];
     allComments.forEach((data) => {
       const comment = data.data() as IComment;
       const id = data.id;
-      if (comment.parentId) {
+      // 부모인 경우
+      if (!comment.parentId) {
         parentComments.push({ ...comment, commentId: id, children: [] });
+      }
+      // 자식인 경우
+      else {
+        childComments.push(comment);
       }
       setChildCommentState((prev) => {
         return { ...prev, [id]: { editMode: false, text: '' } };
       });
     });
-    return allComments;
+    childComments.forEach((child) => {
+      parentComments.forEach((parent) => {
+        if (parent.commentId === child.parentId) {
+          parent.children.push(child);
+        }
+      });
+    });
+    console.log(childComments);
+    return parentComments;
   };
   const { data: comments } = useQuery({ queryKey: ['comments'], queryFn: fetchComments });
-  console.log(comments);
+
   const onAddComment = async (parentId: string | null = null) => {
     try {
       console.log(`parentId`, parentId);
@@ -99,10 +111,12 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
         <Button onClick={() => onAddComment()}>작성</Button>
       </div>
       <div>
-        {comments?.map((data) => {
-          const comment = data.data() as IComment;
-          const commentId = data.id;
-          console.log(childCommentState);
+        {comments?.map((data: IParentComment) => {
+          const comment = data;
+          const commentId = comment.commentId;
+          const children = comment.children;
+          console.log(comment);
+          console.log(children);
           return (
             <div key={commentId}>
               <div className="flex items-center py-3 mb-5">
@@ -164,6 +178,21 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
                   </Button>
                 </div>
               )}
+              {children.length > 0 &&
+                children.map((child: IComment, index) => {
+                  return (
+                    <div key={`childComment_${index}`} className="ml-10">
+                      <div className="flex items-center py-3 mb-5 ">
+                        <AvatarInCard avatarImageSrc={child.profileImage} />
+                        <div>{child.nickName}</div>
+                      </div>
+                      <div className="flex">
+                        <div>{child.comment}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+
               <hr />
             </div>
           );
