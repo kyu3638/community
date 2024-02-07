@@ -1,10 +1,11 @@
+import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
-import { addDoc, collection, doc, getDoc } from '@firebase/firestore';
+import { DocumentData, addDoc, collection, doc, getDoc, getDocs } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 interface ICommentsProps {
   articleId: string;
@@ -24,6 +25,7 @@ interface IComment {
 
 const Comments = ({ articleId, userUid }: ICommentsProps) => {
   const [comment, setComment] = useState('');
+  const [comments, setComments] = useState<DocumentData[] | undefined>();
 
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.target.value);
@@ -41,7 +43,7 @@ const Comments = ({ articleId, userUid }: ICommentsProps) => {
   };
   const { data: user } = useQuery({ queryKey: ['user'], queryFn: fetchUser, refetchOnWindowFocus: true });
 
-  const onUploadComment = async () => {
+  const onAddComment = async () => {
     try {
       const newComment: IComment = {
         articleId,
@@ -54,16 +56,42 @@ const Comments = ({ articleId, userUid }: ICommentsProps) => {
         updatedAt: new Date(),
       };
       await addDoc(collection(db, 'comments'), newComment);
+      setComment('');
     } catch (error) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    const fetchComments = async () => {
+      const ref = collection(db, 'comments');
+      const allComments = await getDocs(ref);
+      console.log(allComments);
+      setComments(allComments.docs);
+    };
+    fetchComments();
+  }, []);
+
   return (
     <>
       <div className="flex items-center">
         <Textarea value={comment} onChange={onCommentHandler} />
-        <Button onClick={onUploadComment}>작성</Button>
+        <Button onClick={onAddComment}>작성</Button>
+      </div>
+      <div>
+        {comments?.map((data) => {
+          const comment = data.data() as IComment;
+          const commentId = data.id;
+          return (
+            <div key={commentId}>
+              <div className="flex items-center">
+                <AvatarInCard avatarImageSrc={comment.profileImage} />
+                <div>{comment.nickName}</div>
+              </div>
+              <div>{comment.comment}</div>
+            </div>
+          );
+        })}
       </div>
     </>
   );
