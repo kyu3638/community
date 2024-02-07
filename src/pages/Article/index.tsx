@@ -18,7 +18,7 @@ interface ILikeFuncArg {
 
 const Article = () => {
   const params = useParams();
-  const articleId = params.articleId as string;
+  const articleId = params.articleId;
   const [myArticle, setMyArticle] = useState(false);
 
   const { userUid } = useUserUid();
@@ -120,7 +120,7 @@ const Article = () => {
             <Button onClick={() => removeArticle()}>삭제</Button>
           </div>
         )}
-        <Comments articleId={articleId} userUid={userUid} />
+        <Comments articleId={articleId!} userUid={userUid!} />
       </ContentWrap>
     </PageWrap>
   );

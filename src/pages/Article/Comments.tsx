@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
-import { doc, getDoc } from '@firebase/firestore';
+import { addDoc, collection, doc, getDoc } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
 import { ChangeEvent, useState } from 'react';
 
@@ -15,14 +15,14 @@ interface IComment {
   articleId: string;
   uid: string;
   nickName: string;
+  profileImage: string;
   comment: string;
-  parentId: string;
+  parentId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const Comments = ({ articleId, userUid }: ICommentsProps) => {
-  console.log(articleId);
   const [comment, setComment] = useState('');
 
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -41,9 +41,23 @@ const Comments = ({ articleId, userUid }: ICommentsProps) => {
   };
   const { data: user } = useQuery({ queryKey: ['user'], queryFn: fetchUser, refetchOnWindowFocus: true });
 
-  const onUploadComment = () => {
-    
-  }
+  const onUploadComment = async () => {
+    try {
+      const newComment: IComment = {
+        articleId,
+        uid: userUid,
+        nickName: user?.nickName as string,
+        profileImage: user?.profileImage as string,
+        comment: comment,
+        parentId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await addDoc(collection(db, 'comments'), newComment);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
