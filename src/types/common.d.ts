@@ -43,7 +43,6 @@ interface IFeed {
   profileImage: string;
   title: string;
   content: string;
-  comments: IComment[];
   like: string[];
   images: string[];
   createdAt: Date;

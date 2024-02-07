@@ -2,14 +2,16 @@ import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
-import { IUser } from '@/types/common';
-import { DocumentData, addDoc, collection, doc, getDoc, getDocs } from '@firebase/firestore';
+import { QueryDocumentSnapshot, addDoc, collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { BlobOptions } from 'buffer';
+import { ChangeEvent, useState } from 'react';
 
 interface ICommentsProps {
   articleId: string;
   userUid: string;
+  nickName: string | undefined;
+  profileImage: string | undefined;
 }
 
 interface IComment {
@@ -23,72 +25,146 @@ interface IComment {
   updatedAt: Date;
 }
 
-const Comments = ({ articleId, userUid }: ICommentsProps) => {
+interface IParentComment extends IComment {
+  commentId: string;
+  children: string[];
+}
+
+interface IChildCommentState {
+  [id: string]: { editMode: boolean; text: string };
+}
+
+const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps) => {
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState<DocumentData[] | undefined>();
+  const [childCommentState, setChildCommentState] = useState<IChildCommentState>({});
 
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.target.value);
   };
 
-  const fetchUser = async (): Promise<IUser | undefined> => {
-    try {
-      const userDocRef = doc(db, 'users', userUid as string);
-      const res = await getDoc(userDocRef);
-      const user = res.data() as IUser;
-      return user;
-    } catch (error) {
-      console.log(error);
-    }
+  const fetchComments = async () => {
+    const commentsRef = collection(db, 'comments');
+    const q = query(commentsRef, orderBy('createdAt', 'desc'));
+    const allComments = (await getDocs(q)).docs as QueryDocumentSnapshot[];
+    const parentComments: IParentComment[] = [];
+    const childComments = [];
+    allComments.forEach((data) => {
+      const comment = data.data() as IComment;
+      const id = data.id;
+      if (comment.parentId) {
+        parentComments.push({ ...comment, commentId: id, children: [] });
+      }
+      setChildCommentState((prev) => {
+        return { ...prev, [id]: { editMode: false, text: '' } };
+      });
+    });
+    return allComments;
   };
-  const { data: user } = useQuery({ queryKey: ['user'], queryFn: fetchUser, refetchOnWindowFocus: true });
-
-  const onAddComment = async () => {
+  const { data: comments } = useQuery({ queryKey: ['comments'], queryFn: fetchComments });
+  console.log(comments);
+  const onAddComment = async (parentId: string | null = null) => {
     try {
+      console.log(`parentId`, parentId);
+      if (parentId) {
+        console.log(`childCommentState[parentId].text`, childCommentState[parentId].text);
+        console.log(`comment`, comment);
+      }
       const newComment: IComment = {
         articleId,
         uid: userUid,
-        nickName: user?.nickName as string,
-        profileImage: user?.profileImage as string,
-        comment: comment,
-        parentId: null,
+        nickName: nickName as string,
+        profileImage: profileImage as string,
+        comment: parentId ? childCommentState[parentId].text : comment,
+        parentId: parentId || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
       await addDoc(collection(db, 'comments'), newComment);
-      setComment('');
+      if (parentId) {
+        setChildCommentState((prev) => {
+          return { ...prev, [parentId]: { editMode: true, text: '' } };
+        });
+      } else {
+        setComment('');
+      }
     } catch (error) {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    const fetchComments = async () => {
-      const ref = collection(db, 'comments');
-      const allComments = await getDocs(ref);
-      console.log(allComments);
-      setComments(allComments.docs);
-    };
-    fetchComments();
-  }, []);
 
   return (
     <>
       <div className="flex items-center">
         <Textarea value={comment} onChange={onCommentHandler} />
-        <Button onClick={onAddComment}>작성</Button>
+        <Button onClick={() => onAddComment()}>작성</Button>
       </div>
       <div>
         {comments?.map((data) => {
           const comment = data.data() as IComment;
           const commentId = data.id;
+          console.log(childCommentState);
           return (
             <div key={commentId}>
-              <div className="flex items-center">
+              <div className="flex items-center py-3 mb-5">
                 <AvatarInCard avatarImageSrc={comment.profileImage} />
                 <div>{comment.nickName}</div>
               </div>
-              <div>{comment.comment}</div>
+              <div className="flex">
+                <div>{comment.comment}</div>
+                <Button>수정</Button>
+              </div>
+              {!childCommentState[commentId].editMode && (
+                <Button
+                  onClick={() =>
+                    setChildCommentState((prev) => {
+                      return {
+                        ...prev,
+                        [commentId]: {
+                          editMode: !childCommentState[commentId].editMode,
+                          text: childCommentState[commentId].text,
+                        },
+                      };
+                    })
+                  }
+                >
+                  댓글 남기기
+                </Button>
+              )}
+              {childCommentState[commentId].editMode && (
+                <div>
+                  <Textarea
+                    value={childCommentState[commentId].text}
+                    onChange={(e) => {
+                      setChildCommentState((prev) => {
+                        return {
+                          ...prev,
+                          [commentId]: {
+                            editMode: childCommentState[commentId].editMode,
+                            text: e.target.value,
+                          },
+                        };
+                      });
+                    }}
+                  />
+                  <Button onClick={() => onAddComment(commentId)}>저장</Button>
+                  <Button
+                    onClick={() =>
+                      setChildCommentState((prev) => {
+                        return {
+                          ...prev,
+                          [commentId]: {
+                            editMode: !childCommentState[commentId].editMode,
+                            text: childCommentState[commentId].text,
+                          },
+                        };
+                      })
+                    }
+                  >
+                    취소
+                  </Button>
+                </div>
+              )}
+              <hr />
             </div>
           );
         })}

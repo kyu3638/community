@@ -113,7 +113,6 @@ const Posting = () => {
         profileImage: profileImage,
         title: title,
         content: content,
-        comments: article?.comments || [],
         like: article?.like || [],
         images: images,
         createdAt: article?.createdAt || new Date(),
