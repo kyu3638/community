@@ -1,6 +1,6 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
-import { IAddCommentArg, IChildCommentState, IComment, IParentComment, IRemoveCommentFuncArg } from '@/types/common';
+import { IAddCommentArg, IChildCommentState, IParentComment, IRemoveCommentFuncArg } from '@/types/common';
 import ChildComments from './ChildComments';
 import { useUserUid } from '@/contexts/LoginUserState';
 
