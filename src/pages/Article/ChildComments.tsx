@@ -14,8 +14,8 @@ import React from 'react';
 
 interface IChildCommentsHandle {
   commentId: string;
-  childCommentState: IChildCommentState;
-  setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
+  commentsState: IChildCommentState;
+  setCommentsState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
   uploadComment: ({ parentId }: IAddCommentArg) => void;
   removeComment: ({ commentId }: IRemoveCommentFuncArg) => void;
   children: IChildComment[];
@@ -24,8 +24,8 @@ interface IChildCommentsHandle {
 
 const ChildComments = ({
   commentId,
-  childCommentState,
-  setChildCommentState,
+  commentsState,
+  setCommentsState,
   uploadComment,
   removeComment,
   children,
@@ -33,26 +33,24 @@ const ChildComments = ({
 }: IChildCommentsHandle) => {
   const { userUid } = useUserUid();
 
-  /** 자식 댓글 편집기 열고 닫기 */
   const editChildCommentModeHandler = (commentId: string, mode: CommentStateMode) => {
-    setChildCommentState((prev) => {
+    setCommentsState((prev) => {
       return {
         ...prev,
         [commentId]: {
           editMode: mode,
-          text: childCommentState[commentId].text,
+          text: commentsState[commentId].text,
         },
       };
     });
   };
 
-  /** 자식 댓글 편집기에 작성 */
   const editChildCommentTextHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setChildCommentState((prev) => {
+    setCommentsState((prev) => {
       return {
         ...prev,
         [commentId]: {
-          editMode: childCommentState[commentId].editMode,
+          editMode: commentsState[commentId].editMode,
           text: e.target.value,
         },
       };
@@ -60,9 +58,8 @@ const ChildComments = ({
   };
 
   const updateChildCommentAndChangeMode = (commentId: string, text: string) => {
-    // commentId에 해당하는 댓글을 업데이트하는 함수 필요
     updateComment({ targetCommentId: commentId, targetCommentText: text });
-    setChildCommentState((prev) => {
+    setCommentsState((prev) => {
       return {
         ...prev,
         [commentId]: {
@@ -75,12 +72,13 @@ const ChildComments = ({
 
   return (
     <>
-      {childCommentState[commentId]?.editMode === 'view' && (
+      {/* 자식 댓글 작성 */}
+      {commentsState[commentId]?.editMode === 'view' && (
         <Button onClick={() => editChildCommentModeHandler(commentId, 'create')}>댓글 남기기</Button>
       )}
-      {childCommentState[commentId]?.editMode === 'create' && (
+      {commentsState[commentId]?.editMode === 'create' && (
         <div>
-          <Textarea value={childCommentState[commentId].text} onChange={(e) => editChildCommentTextHandler(e)} />
+          <Textarea value={commentsState[commentId].text} onChange={(e) => editChildCommentTextHandler(e)} />
           <Button onClick={() => uploadComment({ parentId: commentId })}>저장</Button>
           <Button onClick={() => editChildCommentModeHandler(commentId, 'view')}>취소</Button>
         </div>
@@ -95,11 +93,11 @@ const ChildComments = ({
                 <div>{child.nickName}</div>
               </div>
               <div className="flex justify-between">
-                {childCommentState[childId]?.editMode === 'edit' && (
+                {commentsState[childId]?.editMode === 'edit' && (
                   <Textarea
-                    value={childCommentState[childId]?.text}
+                    value={commentsState[childId]?.text}
                     onChange={(e) => {
-                      setChildCommentState((prev) => {
+                      setCommentsState((prev) => {
                         return {
                           ...prev,
                           [childId]: {
@@ -111,20 +109,18 @@ const ChildComments = ({
                     }}
                   />
                 )}
-                {childCommentState[childId]?.editMode === 'view' && <div>{child.comment}</div>}
+                {commentsState[childId]?.editMode === 'view' && <div>{child.comment}</div>}
                 {userUid === child.uid && (
                   <div>
-                    {childCommentState[childId]?.editMode === 'edit' && (
+                    {commentsState[childId]?.editMode === 'edit' && (
                       <>
-                        <Button
-                          onClick={() => updateChildCommentAndChangeMode(childId, childCommentState[childId].text)}
-                        >
+                        <Button onClick={() => updateChildCommentAndChangeMode(childId, commentsState[childId].text)}>
                           저장
                         </Button>
                         <Button onClick={() => editChildCommentModeHandler(childId, 'view')}>취소</Button>
                       </>
                     )}
-                    {childCommentState[childId]?.editMode === 'view' && (
+                    {commentsState[childId]?.editMode === 'view' && (
                       <>
                         <Button onClick={() => editChildCommentModeHandler(childId, 'edit')}>수정</Button>
                         <Button onClick={() => removeComment({ commentId: childId })}>삭제</Button>

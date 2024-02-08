@@ -12,8 +12,8 @@ import { useUserUid } from '@/contexts/LoginUserState';
 
 interface ICommentsProps {
   comments: IParentComment[];
-  childCommentState: IChildCommentState;
-  setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
+  commentsState: IChildCommentState;
+  setCommentsState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
   uploadComment: ({ parentId }: IAddCommentArg) => void;
   removeComment: ({ commentId }: IRemoveCommentFuncArg) => void;
   updateComment: ({ targetCommentId, targetCommentText }: IUpdateCommentFuncArg) => void;
@@ -21,8 +21,8 @@ interface ICommentsProps {
 
 const Comments = ({
   comments,
-  childCommentState,
-  setChildCommentState,
+  commentsState,
+  setCommentsState,
   uploadComment,
   removeComment,
   updateComment,
@@ -54,8 +54,8 @@ const Comments = ({
             </div>
             <ChildComments
               commentId={commentId}
-              childCommentState={childCommentState}
-              setChildCommentState={setChildCommentState}
+              commentsState={commentsState}
+              setCommentsState={setCommentsState}
               uploadComment={uploadComment}
               removeComment={removeComment}
               children={children}

@@ -34,11 +34,8 @@ const removedProfileImageURL =
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const [user, setUser] = useState<IUser | undefined>();
   const [comment, setComment] = useState('');
-  const [childCommentState, setChildCommentState] = useState<IChildCommentState>({});
+  const [commentsState, setCommentsState] = useState<IChildCommentState>({});
 
-  useEffect(() => {
-    console.log(childCommentState);
-  }, [childCommentState]);
   const queryClient = useQueryClient();
 
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -78,10 +75,10 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       // 자식인 경우
       else {
         childComments.push({ ...comment, commentId: id });
-        setChildCommentState((prev) => {
-          return { ...prev, [id]: { editMode: 'view', text: '' } };
-        });
       }
+      setCommentsState((prev) => {
+        return { ...prev, [id]: { editMode: 'view', text: '' } };
+      });
     });
     childComments.forEach((child) => {
       parentComments.forEach((parent) => {
@@ -101,7 +98,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
         uid: userUid as string,
         nickName: user?.nickName as string,
         profileImage: user?.profileImage as string,
-        comment: parentId ? childCommentState[parentId].text : comment,
+        comment: parentId ? commentsState[parentId].text : comment,
         parentId: parentId || null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -109,7 +106,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       };
       await addDoc(collection(db, 'comments'), newComment);
       if (parentId) {
-        setChildCommentState((prev) => {
+        setCommentsState((prev) => {
           return { ...prev, [parentId]: { editMode: 'view', text: '' } };
         });
       } else {
@@ -176,8 +173,8 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       <div>
         <Comments
           comments={comments!}
-          childCommentState={childCommentState}
-          setChildCommentState={setChildCommentState}
+          commentsState={commentsState}
+          setCommentsState={setCommentsState}
           uploadComment={uploadComment}
           removeComment={removeComment}
           updateComment={updateComment}
