@@ -120,12 +120,7 @@ const Article = () => {
             <Button onClick={() => removeArticle()}>삭제</Button>
           </div>
         )}
-        <Comments
-          articleId={articleId!}
-          userUid={userUid!}
-          nickName={article?.nickName}
-          profileImage={article?.profileImage}
-        />
+        <Comments articleId={articleId!} />
       </ContentWrap>
     </PageWrap>
   );

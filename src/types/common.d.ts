@@ -68,9 +68,6 @@ export interface IParentComment extends IComment {
 
 export interface ICommentsProps {
   articleId: string;
-  userUid: string;
-  nickName: string | undefined;
-  profileImage: string | undefined;
 }
 
 export interface IChildCommentState {

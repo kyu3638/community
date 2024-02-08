@@ -1,9 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
-import { QueryDocumentSnapshot, addDoc, collection, doc, getDocs, query, updateDoc, where } from '@firebase/firestore';
+import {
+  QueryDocumentSnapshot,
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from '@firebase/firestore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Comments from './Comments';
 import {
   IAddCommentArg,
@@ -12,12 +22,15 @@ import {
   ICommentsProps,
   IParentComment,
   IRemoveCommentFuncArg,
+  IUser,
 } from '@/types/common';
+import { useUserUid } from '@/contexts/LoginUserState';
 
 const removedProfileImageURL =
   'https://firebasestorage.googleapis.com/v0/b/community-8a2d7.appspot.com/o/userImage%2Fanonymous.png?alt=media&token=5a5ebb3a-4144-43c1-be10-cbc2a9b0831b';
 
-const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: ICommentsProps) => {
+const CommentsContainer = ({ articleId }: ICommentsProps) => {
+  const [user, setUser] = useState<IUser | undefined>();
   const [comment, setComment] = useState('');
   const [childCommentState, setChildCommentState] = useState<IChildCommentState>({});
 
@@ -26,6 +39,20 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.target.value);
   };
+
+  const { userUid } = useUserUid();
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userRef = doc(db, 'users', userUid as string);
+        const user = (await getDoc(userRef)).data() as IUser;
+        setUser(user);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const fetchComments = async () => {
     const commentsRef = collection(db, 'comments');
@@ -65,9 +92,9 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
     try {
       const newComment: IComment = {
         articleId,
-        uid: userUid,
-        nickName: nickName as string,
-        profileImage: profileImage as string,
+        uid: userUid as string,
+        nickName: user?.nickName as string,
+        profileImage: user?.profileImage as string,
         comment: parentId ? childCommentState[parentId].text : comment,
         parentId: parentId || null,
         createdAt: new Date(),
