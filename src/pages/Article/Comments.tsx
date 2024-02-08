@@ -42,7 +42,7 @@ const Comments = ({
       };
     });
   };
-  
+
   const editCommentTextHandler = (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCommentsState((prev) => {
       return {
@@ -54,7 +54,7 @@ const Comments = ({
       };
     });
   };
-  
+
   const updateCommentAndChangeMode = (commentId: string, text: string) => {
     updateComment({ targetCommentId: commentId, targetCommentText: text });
     setCommentsState((prev) => {
@@ -123,8 +123,8 @@ const Comments = ({
               removeComment={removeComment}
               children={children}
               editCommentModeHandler={editCommentModeHandler}
-  editCommentTextHandler={editCommentTextHandler}
-  updateCommentAndChangeMode={updateCommentAndChangeMode}
+              editCommentTextHandler={editCommentTextHandler}
+              updateCommentAndChangeMode={updateCommentAndChangeMode}
             />
             <hr />
           </div>
