@@ -63,7 +63,11 @@ export interface IComment {
 
 export interface IParentComment extends IComment {
   commentId: string;
-  children: IComment[];
+  children: IChildComment[];
+}
+
+export interface IChildComment extends IComment {
+  commentId: string;
 }
 
 export interface ICommentsProps {

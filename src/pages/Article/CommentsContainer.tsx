@@ -17,6 +17,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import Comments from './Comments';
 import {
   IAddCommentArg,
+  IChildComment,
   IChildCommentState,
   IComment,
   ICommentsProps,
@@ -61,7 +62,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     // 최신 순으로 출력되도록 정렬(firestore 메소드)
     allComments.sort((a, b) => a?.data().createdAt.toMillis() - b?.data().createdAt.toMillis());
     const parentComments: IParentComment[] = [];
-    const childComments: IComment[] = [];
+    const childComments: IChildComment[] = [];
     allComments.forEach((data) => {
       const comment = data.data() as IComment;
       const id = data.id;
@@ -71,7 +72,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       }
       // 자식인 경우
       else {
-        childComments.push(comment);
+        childComments.push({ ...comment, commentId: id });
       }
       setChildCommentState((prev) => {
         return { ...prev, [id]: { editMode: false, text: '' } };

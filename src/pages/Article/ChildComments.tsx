@@ -1,7 +1,7 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { IAddCommentArg, IChildCommentState, IComment, IRemoveCommentFuncArg } from '@/types/common';
+import { IAddCommentArg, IChildComment, IChildCommentState, IRemoveCommentFuncArg } from '@/types/common';
 import React from 'react';
 
 interface IChildCommentsHandle {
@@ -10,7 +10,7 @@ interface IChildCommentsHandle {
   setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
   uploadComment: (parentId: IAddCommentArg) => void;
   removeComment: (commentId: IRemoveCommentFuncArg) => void;
-  children: IComment[];
+  children: IChildComment[];
 }
 
 const ChildComments = ({
@@ -18,6 +18,7 @@ const ChildComments = ({
   childCommentState,
   setChildCommentState,
   uploadComment,
+  removeComment,
   children,
 }: IChildCommentsHandle) => {
   /** 자식 댓글 편집기 열고 닫기 */
@@ -59,15 +60,18 @@ const ChildComments = ({
         </div>
       )}
       {children &&
-        children.map((child: IComment, index: number) => {
+        children.map((child: IChildComment, index: number) => {
           return (
             <div key={`childComment_${index}`} className="ml-10">
               <div className="flex items-center py-3 mb-5 ">
                 <AvatarInCard avatarImageSrc={child.profileImage} />
                 <div>{child.nickName}</div>
               </div>
-              <div className="flex">
+              <div className="flex justify-between">
                 <div>{child.comment}</div>
+                <div>
+                  <Button onClick={() => removeComment({ commentId: child.commentId })}>삭제</Button>
+                </div>
               </div>
             </div>
           );
