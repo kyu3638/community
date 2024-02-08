@@ -8,8 +8,8 @@ interface ICommentsProps {
   comments: IParentComment[];
   childCommentState: IChildCommentState;
   setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
-  uploadComment: (parentId: IAddCommentArg) => Promise<void>;
-  removeComment: (commentId: IRemoveCommentFuncArg) => Promise<void>;
+  uploadComment: (parentId: IAddCommentArg) => void;
+  removeComment: (commentId: IRemoveCommentFuncArg) => void;
 }
 
 const Comments = ({
