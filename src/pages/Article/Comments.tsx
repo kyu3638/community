@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
 import { QueryDocumentSnapshot, addDoc, collection, getDocs, orderBy, query } from '@firebase/firestore';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useState } from 'react';
 
 interface ICommentsProps {
@@ -33,9 +33,15 @@ interface IChildCommentState {
   [id: string]: { editMode: boolean; text: string };
 }
 
+interface IAddCommentArg {
+  parentId: string | null;
+}
+
 const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps) => {
   const [comment, setComment] = useState('');
   const [childCommentState, setChildCommentState] = useState<IChildCommentState>({});
+
+  const queryClient = useQueryClient();
 
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.target.value);
@@ -69,18 +75,12 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
         }
       });
     });
-    console.log(childComments);
     return parentComments;
   };
-  const { data: comments } = useQuery({ queryKey: ['comments'], queryFn: fetchComments });
+  const { data: comments, isLoading: commentsLoading } = useQuery({ queryKey: ['comments'], queryFn: fetchComments });
 
-  const onAddComment = async (parentId: string | null = null) => {
+  const onAddComment = async ({ parentId = null }: IAddCommentArg) => {
     try {
-      console.log(`parentId`, parentId);
-      if (parentId) {
-        console.log(`childCommentState[parentId].text`, childCommentState[parentId].text);
-        console.log(`comment`, comment);
-      }
       const newComment: IComment = {
         articleId,
         uid: userUid,
@@ -103,20 +103,28 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
       console.log(error);
     }
   };
+  const { mutate: uploadComment } = useMutation({
+    mutationFn: onAddComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+    },
+  });
+
+  if (commentsLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
       <div className="flex items-center">
         <Textarea value={comment} onChange={onCommentHandler} />
-        <Button onClick={() => onAddComment()}>작성</Button>
+        <Button onClick={() => uploadComment({ parentId: null })}>작성</Button>
       </div>
       <div>
         {comments?.map((data: IParentComment) => {
           const comment = data;
           const commentId = comment.commentId;
           const children = comment.children;
-          console.log(comment);
-          console.log(children);
           return (
             <div key={commentId}>
               <div className="flex items-center py-3 mb-5">
@@ -160,7 +168,7 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
                       });
                     }}
                   />
-                  <Button onClick={() => onAddComment(commentId)}>저장</Button>
+                  <Button onClick={() => uploadComment({ parentId: commentId })}>저장</Button>
                   <Button
                     onClick={() =>
                       setChildCommentState((prev) => {
