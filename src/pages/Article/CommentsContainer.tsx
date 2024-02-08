@@ -55,6 +55,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     fetchUser();
   }, []);
 
+  /** 댓글을 DB로부터 받아와 부모-자식 관계로 만드는 함수 */
   const fetchComments = async () => {
     const commentsRef = collection(db, 'comments');
     const q = query(commentsRef, where('articleId', '==', articleId));

@@ -1,6 +1,7 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useUserUid } from '@/contexts/LoginUserState';
 import { IAddCommentArg, IChildComment, IChildCommentState, IRemoveCommentFuncArg } from '@/types/common';
 import React from 'react';
 
@@ -21,6 +22,8 @@ const ChildComments = ({
   removeComment,
   children,
 }: IChildCommentsHandle) => {
+  const { userUid } = useUserUid();
+
   /** 자식 댓글 편집기 열고 닫기 */
   const editChildCommentModeHandler = (commentId: string) => {
     setChildCommentState((prev) => {
@@ -69,9 +72,11 @@ const ChildComments = ({
               </div>
               <div className="flex justify-between">
                 <div>{child.comment}</div>
-                <div>
-                  <Button onClick={() => removeComment({ commentId: child.commentId })}>삭제</Button>
-                </div>
+                {userUid === child.uid && (
+                  <div>
+                    <Button onClick={() => removeComment({ commentId: child.commentId })}>삭제</Button>
+                  </div>
+                )}
               </div>
             </div>
           );
