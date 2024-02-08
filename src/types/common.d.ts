@@ -58,6 +58,12 @@ export interface IComment {
   parentId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  isRemoved: boolean;
+}
+
+export interface IParentComment extends IComment {
+  commentId: string;
+  children: IComment[];
 }
 
 export interface ICommentsProps {
@@ -67,15 +73,14 @@ export interface ICommentsProps {
   profileImage: string | undefined;
 }
 
-export interface IParentComment extends IComment {
-  commentId: string;
-  children: IComment[];
-}
-
 export interface IChildCommentState {
   [id: string]: { editMode: boolean; text: string };
 }
 
 export interface IAddCommentArg {
   parentId: string | null;
+}
+
+export interface IRemoveCommentFuncArg {
+  commentId: string;
 }

@@ -1,11 +1,21 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
-import { QueryDocumentSnapshot, addDoc, collection, getDocs, query, where } from '@firebase/firestore';
+import { QueryDocumentSnapshot, addDoc, collection, doc, getDocs, query, updateDoc, where } from '@firebase/firestore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useState } from 'react';
 import Comments from './Comments';
-import { IAddCommentArg, IChildCommentState, IComment, ICommentsProps, IParentComment } from '@/types/common';
+import {
+  IAddCommentArg,
+  IChildCommentState,
+  IComment,
+  ICommentsProps,
+  IParentComment,
+  IRemoveCommentFuncArg,
+} from '@/types/common';
+
+const removedProfileImageURL =
+  'https://firebasestorage.googleapis.com/v0/b/community-8a2d7.appspot.com/o/userImage%2Fanonymous.png?alt=media&token=5a5ebb3a-4144-43c1-be10-cbc2a9b0831b';
 
 const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: ICommentsProps) => {
   const [comment, setComment] = useState('');
@@ -49,7 +59,7 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
     });
     return parentComments;
   };
-  const { data: comments, isLoading: commentsLoading } = useQuery({ queryKey: ['comments'], queryFn: fetchComments });
+  const { data: comments } = useQuery({ queryKey: ['comments'], queryFn: fetchComments });
 
   const onAddComment = async ({ parentId = null }: IAddCommentArg) => {
     try {
@@ -62,6 +72,7 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
         parentId: parentId || null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        isRemoved: false,
       };
       await addDoc(collection(db, 'comments'), newComment);
       if (parentId) {
@@ -82,9 +93,27 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
     },
   });
 
-  if (commentsLoading) {
-    return <div>Loading...</div>;
-  }
+  const onRemoveComment = async ({ commentId }: IRemoveCommentFuncArg) => {
+    try {
+      const commentRef = doc(db, 'comments', commentId);
+      const removedComment = {
+        uid: '',
+        nickName: '',
+        profileImage: removedProfileImageURL,
+        comment: '삭제된 메세지입니다.',
+        isRemoved: true,
+      };
+      await updateDoc(commentRef, removedComment);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { mutate: removeComment } = useMutation({
+    mutationFn: onRemoveComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+    },
+  });
 
   return (
     <>
@@ -98,6 +127,7 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
           childCommentState={childCommentState}
           setChildCommentState={setChildCommentState}
           uploadComment={uploadComment}
+          removeComment={removeComment}
         />
       </div>
     </>
