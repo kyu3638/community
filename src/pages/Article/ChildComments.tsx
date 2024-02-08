@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { IAddCommentArg, IChildCommentState } from '@/types/common';
+import { IAddCommentArg, IChildCommentState, IRemoveCommentFuncArg } from '@/types/common';
 import React from 'react';
 
 interface IChildCommentsHandle {
@@ -8,6 +8,7 @@ interface IChildCommentsHandle {
   childCommentState: IChildCommentState;
   setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
   uploadComment: (parentId: IAddCommentArg) => void;
+  removeComment: (commentId: IRemoveCommentFuncArg) => void;
 }
 
 const ChildComments = ({ commentId, childCommentState, setChildCommentState, uploadComment }: IChildCommentsHandle) => {

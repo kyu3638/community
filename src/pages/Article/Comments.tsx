@@ -49,6 +49,7 @@ const Comments = ({
               childCommentState={childCommentState}
               setChildCommentState={setChildCommentState}
               uploadComment={uploadComment}
+              removeComment={removeComment}
             />
             {children &&
               children.map((child: IComment, index: number) => {

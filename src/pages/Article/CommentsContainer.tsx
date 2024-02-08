@@ -59,7 +59,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     const q = query(commentsRef, where('articleId', '==', articleId));
     const allComments = (await getDocs(q)).docs as QueryDocumentSnapshot[];
     // 최신 순으로 출력되도록 정렬(firestore 메소드)
-    allComments.sort((a, b) => b?.data().createdAt.toMillis() - a?.data().createdAt.toMillis());
+    allComments.sort((a, b) => a?.data().createdAt.toMillis() - b?.data().createdAt.toMillis());
     const parentComments: IParentComment[] = [];
     const childComments: IComment[] = [];
     allComments.forEach((data) => {
