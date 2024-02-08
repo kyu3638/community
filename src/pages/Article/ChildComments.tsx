@@ -41,7 +41,7 @@ const ChildComments = ({
                   <Textarea value={commentsState[childId]?.text} onChange={(e) => editCommentTextHandler(childId, e)} />
                 )}
                 {userUid === child.uid && (
-                  <div>
+                  <>
                     {commentsState[childId]?.editMode === 'edit' && (
                       <>
                         <Button onClick={() => updateCommentAndChangeMode(childId, commentsState[childId].text)}>
@@ -56,7 +56,7 @@ const ChildComments = ({
                         <Button onClick={() => removeComment({ commentId: childId })}>삭제</Button>
                       </>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             </div>

@@ -88,22 +88,24 @@ const Comments = ({
                   onChange={(e) => editCommentTextHandler(commentId, e)}
                 />
               )}
-              <div>
-                {userUid === comment.uid && commentsState[commentId]?.editMode === 'view' && (
-                  <>
-                    <Button onClick={() => editCommentModeHandler(commentId, 'edit')}>수정</Button>
-                    <Button onClick={() => removeComment({ commentId })}>삭제</Button>
-                  </>
-                )}
-                {userUid === comment.uid && commentsState[commentId]?.editMode === 'edit' && (
-                  <>
-                    <Button onClick={() => updateCommentAndChangeMode(commentId, commentsState[commentId].text)}>
-                      저장
-                    </Button>
-                    <Button onClick={() => editCommentModeHandler(commentId, 'view')}>취소</Button>
-                  </>
-                )}
-              </div>
+              {userUid === comment.uid && (
+                <>
+                  {commentsState[commentId]?.editMode === 'view' && (
+                    <>
+                      <Button onClick={() => editCommentModeHandler(commentId, 'edit')}>수정</Button>
+                      <Button onClick={() => removeComment({ commentId })}>삭제</Button>
+                    </>
+                  )}
+                  {commentsState[commentId]?.editMode === 'edit' && (
+                    <>
+                      <Button onClick={() => updateCommentAndChangeMode(commentId, commentsState[commentId].text)}>
+                        저장
+                      </Button>
+                      <Button onClick={() => editCommentModeHandler(commentId, 'view')}>취소</Button>
+                    </>
+                  )}
+                </>
+              )}
             </div>
             {commentsState[commentId]?.editMode === 'view' && (
               <Button onClick={() => editCommentModeHandler(commentId, 'create')}>댓글 남기기</Button>
