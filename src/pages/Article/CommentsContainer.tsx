@@ -23,6 +23,7 @@ import {
   ICommentsProps,
   IParentComment,
   IRemoveCommentFuncArg,
+  IUpdateCommentFuncArg,
   IUser,
 } from '@/types/common';
 import { useUserUid } from '@/contexts/LoginUserState';
@@ -35,6 +36,9 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const [comment, setComment] = useState('');
   const [childCommentState, setChildCommentState] = useState<IChildCommentState>({});
 
+  useEffect(() => {
+    console.log(childCommentState);
+  }, [childCommentState]);
   const queryClient = useQueryClient();
 
   const onCommentHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -74,10 +78,10 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       // 자식인 경우
       else {
         childComments.push({ ...comment, commentId: id });
+        setChildCommentState((prev) => {
+          return { ...prev, [id]: { editMode: 'view', text: '' } };
+        });
       }
-      setChildCommentState((prev) => {
-        return { ...prev, [id]: { editMode: false, text: '' } };
-      });
     });
     childComments.forEach((child) => {
       parentComments.forEach((parent) => {
@@ -106,7 +110,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       await addDoc(collection(db, 'comments'), newComment);
       if (parentId) {
         setChildCommentState((prev) => {
-          return { ...prev, [parentId]: { editMode: true, text: '' } };
+          return { ...prev, [parentId]: { editMode: 'view', text: '' } };
         });
       } else {
         setComment('');
@@ -117,6 +121,25 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   };
   const { mutate: uploadComment } = useMutation({
     mutationFn: onAddComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+    },
+  });
+
+  const onUpdateComment = async ({ targetCommentId, targetCommentText }: IUpdateCommentFuncArg) => {
+    try {
+      const editComment = {
+        comment: targetCommentText,
+        updatedAt: new Date(),
+      };
+      const docRef = doc(db, 'comments', targetCommentId);
+      await updateDoc(docRef, editComment);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const { mutate: updateComment } = useMutation({
+    mutationFn: onUpdateComment,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['comments'] });
     },
@@ -157,6 +180,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
           setChildCommentState={setChildCommentState}
           uploadComment={uploadComment}
           removeComment={removeComment}
+          updateComment={updateComment}
         />
       </div>
     </>

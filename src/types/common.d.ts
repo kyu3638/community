@@ -75,7 +75,7 @@ export interface ICommentsProps {
 }
 
 export interface IChildCommentState {
-  [id: string]: { editMode: boolean; text: string };
+  [id: string]: { editMode: CommentStateMode; text: string };
 }
 
 export interface IAddCommentArg {
@@ -85,3 +85,10 @@ export interface IAddCommentArg {
 export interface IRemoveCommentFuncArg {
   commentId: string;
 }
+
+export interface IUpdateCommentFuncArg {
+  targetCommentId: string;
+  targetCommentText: string;
+}
+
+export type CommentStateMode = 'create' | 'edit' | 'view';

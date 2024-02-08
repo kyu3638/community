@@ -1,6 +1,12 @@
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
-import { IAddCommentArg, IChildCommentState, IParentComment, IRemoveCommentFuncArg } from '@/types/common';
+import {
+  IAddCommentArg,
+  IChildCommentState,
+  IParentComment,
+  IRemoveCommentFuncArg,
+  IUpdateCommentFuncArg,
+} from '@/types/common';
 import ChildComments from './ChildComments';
 import { useUserUid } from '@/contexts/LoginUserState';
 
@@ -8,8 +14,9 @@ interface ICommentsProps {
   comments: IParentComment[];
   childCommentState: IChildCommentState;
   setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
-  uploadComment: (parentId: IAddCommentArg) => void;
-  removeComment: (commentId: IRemoveCommentFuncArg) => void;
+  uploadComment: ({ parentId }: IAddCommentArg) => void;
+  removeComment: ({ commentId }: IRemoveCommentFuncArg) => void;
+  updateComment: ({ targetCommentId, targetCommentText }: IUpdateCommentFuncArg) => void;
 }
 
 const Comments = ({
@@ -18,6 +25,7 @@ const Comments = ({
   setChildCommentState,
   uploadComment,
   removeComment,
+  updateComment,
 }: ICommentsProps) => {
   const { userUid } = useUserUid();
 
@@ -51,6 +59,7 @@ const Comments = ({
               uploadComment={uploadComment}
               removeComment={removeComment}
               children={children}
+              updateComment={updateComment}
             />
             <hr />
           </div>

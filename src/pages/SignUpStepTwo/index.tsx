@@ -17,7 +17,7 @@ const SignUpStepTwo = () => {
 
   useEffect(() => {
     if (auth.currentUser) {
-      updateUserUid(auth.currentUser.uid);
+      updateUserUid(auth.currentUser.uid);  
     } else {
       navigate('/');
     }
