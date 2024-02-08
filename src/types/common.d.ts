@@ -12,7 +12,7 @@ export interface IUserUidContext {
 
 type UserUidType = string | null;
 
-interface IUser {
+export interface IUser {
   uid: string;
   email: string;
   nickName: string;
@@ -25,7 +25,7 @@ interface IUser {
   like: string[];
 }
 
-interface ILoginInput {
+export interface ILoginInput {
   label: string;
   type: string;
   placeholder: string;
@@ -33,26 +33,62 @@ interface ILoginInput {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-interface IInputsForm {
+export interface IInputsForm {
   children: ReactNode;
 }
 
-interface IFeed {
+export interface IFeed {
   uid: UserUidType;
   nickName: string;
   profileImage: string;
   title: string;
   content: string;
-  comments: IComment[];
   like: string[];
   images: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-interface IComment {
-  uid: UserUidType;
+export interface IComment {
+  articleId: string;
+  uid: string;
+  nickName: string;
+  profileImage: string;
   comment: string;
+  parentId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  isRemoved: boolean;
 }
+
+export interface IParentComment extends IComment {
+  commentId: string;
+  children: IChildComment[];
+}
+
+export interface IChildComment extends IComment {
+  commentId: string;
+}
+
+export interface ICommentsProps {
+  articleId: string;
+}
+
+export interface IChildCommentState {
+  [id: string]: { editMode: CommentStateMode; text: string };
+}
+
+export interface IAddCommentArg {
+  parentId: string | null;
+}
+
+export interface IRemoveCommentFuncArg {
+  commentId: string;
+}
+
+export interface IUpdateCommentFuncArg {
+  targetCommentId: string;
+  targetCommentText: string;
+}
+
+export type CommentStateMode = 'create' | 'edit' | 'view';
