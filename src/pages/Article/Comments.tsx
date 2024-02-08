@@ -135,7 +135,7 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
                 <div>{comment.comment}</div>
                 <Button>수정</Button>
               </div>
-              {!childCommentState[commentId].editMode && (
+              {!childCommentState[commentId]?.editMode && (
                 <Button
                   onClick={() =>
                     setChildCommentState((prev) => {
@@ -152,7 +152,7 @@ const Comments = ({ articleId, userUid, nickName, profileImage }: ICommentsProps
                   댓글 남기기
                 </Button>
               )}
-              {childCommentState[commentId].editMode && (
+              {childCommentState[commentId]?.editMode && (
                 <div>
                   <Textarea
                     value={childCommentState[commentId].text}
