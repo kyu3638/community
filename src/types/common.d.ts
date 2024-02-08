@@ -12,7 +12,7 @@ export interface IUserUidContext {
 
 type UserUidType = string | null;
 
-interface IUser {
+export interface IUser {
   uid: string;
   email: string;
   nickName: string;
@@ -25,7 +25,7 @@ interface IUser {
   like: string[];
 }
 
-interface ILoginInput {
+export interface ILoginInput {
   label: string;
   type: string;
   placeholder: string;
@@ -33,11 +33,11 @@ interface ILoginInput {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-interface IInputsForm {
+export interface IInputsForm {
   children: ReactNode;
 }
 
-interface IFeed {
+export interface IFeed {
   uid: UserUidType;
   nickName: string;
   profileImage: string;
@@ -49,9 +49,33 @@ interface IFeed {
   updatedAt: Date;
 }
 
-interface IComment {
-  uid: UserUidType;
+export interface IComment {
+  articleId: string;
+  uid: string;
+  nickName: string;
+  profileImage: string;
   comment: string;
+  parentId: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ICommentsProps {
+  articleId: string;
+  userUid: string;
+  nickName: string | undefined;
+  profileImage: string | undefined;
+}
+
+export interface IParentComment extends IComment {
+  commentId: string;
+  children: IComment[];
+}
+
+export interface IChildCommentState {
+  [id: string]: { editMode: boolean; text: string };
+}
+
+export interface IAddCommentArg {
+  parentId: string | null;
 }

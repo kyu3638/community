@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import Comments from './Comments';
+import Comments from './CommentsContainer';
 
 interface ILikeFuncArg {
   type: string;
