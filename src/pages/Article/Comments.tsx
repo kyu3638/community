@@ -50,21 +50,8 @@ const Comments = ({
               setChildCommentState={setChildCommentState}
               uploadComment={uploadComment}
               removeComment={removeComment}
+              children={children}
             />
-            {children &&
-              children.map((child: IComment, index: number) => {
-                return (
-                  <div key={`childComment_${index}`} className="ml-10">
-                    <div className="flex items-center py-3 mb-5 ">
-                      <AvatarInCard avatarImageSrc={child.profileImage} />
-                      <div>{child.nickName}</div>
-                    </div>
-                    <div className="flex">
-                      <div>{child.comment}</div>
-                    </div>
-                  </div>
-                );
-              })}
             <hr />
           </div>
         );

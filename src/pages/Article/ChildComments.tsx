@@ -1,6 +1,7 @@
+import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { IAddCommentArg, IChildCommentState, IRemoveCommentFuncArg } from '@/types/common';
+import { IAddCommentArg, IChildCommentState, IComment, IRemoveCommentFuncArg } from '@/types/common';
 import React from 'react';
 
 interface IChildCommentsHandle {
@@ -9,9 +10,16 @@ interface IChildCommentsHandle {
   setChildCommentState: React.Dispatch<React.SetStateAction<IChildCommentState>>;
   uploadComment: (parentId: IAddCommentArg) => void;
   removeComment: (commentId: IRemoveCommentFuncArg) => void;
+  children: IComment[];
 }
 
-const ChildComments = ({ commentId, childCommentState, setChildCommentState, uploadComment }: IChildCommentsHandle) => {
+const ChildComments = ({
+  commentId,
+  childCommentState,
+  setChildCommentState,
+  uploadComment,
+  children,
+}: IChildCommentsHandle) => {
   /** 자식 댓글 편집기 열고 닫기 */
   const editChildCommentModeHandler = (commentId: string) => {
     setChildCommentState((prev) => {
@@ -50,6 +58,20 @@ const ChildComments = ({ commentId, childCommentState, setChildCommentState, upl
           <Button onClick={() => editChildCommentModeHandler(commentId)}>취소</Button>
         </div>
       )}
+      {children &&
+        children.map((child: IComment, index: number) => {
+          return (
+            <div key={`childComment_${index}`} className="ml-10">
+              <div className="flex items-center py-3 mb-5 ">
+                <AvatarInCard avatarImageSrc={child.profileImage} />
+                <div>{child.nickName}</div>
+              </div>
+              <div className="flex">
+                <div>{child.comment}</div>
+              </div>
+            </div>
+          );
+        })}
     </>
   );
 };
