@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
-import { QueryDocumentSnapshot, addDoc, collection, getDocs, orderBy, query } from '@firebase/firestore';
+import { QueryDocumentSnapshot, addDoc, collection, getDocs, query, where } from '@firebase/firestore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useState } from 'react';
 import Comments from './Comments';
@@ -19,8 +19,10 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
 
   const fetchComments = async () => {
     const commentsRef = collection(db, 'comments');
-    const q = query(commentsRef, orderBy('createdAt', 'desc'));
+    const q = query(commentsRef, where('articleId', '==', articleId));
     const allComments = (await getDocs(q)).docs as QueryDocumentSnapshot[];
+    // 최신 순으로 출력되도록 정렬(firestore 메소드)
+    allComments.sort((a, b) => b?.data().createdAt.toMillis() - a?.data().createdAt.toMillis());
     const parentComments: IParentComment[] = [];
     const childComments: IComment[] = [];
     allComments.forEach((data) => {
@@ -97,90 +99,6 @@ const CommentsContainer = ({ articleId, userUid, nickName, profileImage }: IComm
           setChildCommentState={setChildCommentState}
           uploadComment={uploadComment}
         />
-        {/* {comments?.map((data: IParentComment) => {
-          const comment = data;
-          const commentId = comment.commentId;
-          const children = comment.children;
-          return (
-            <div key={commentId}>
-              <div className="flex items-center py-3 mb-5">
-                <AvatarInCard avatarImageSrc={comment.profileImage} />
-                <div>{comment.nickName}</div>
-              </div>
-              <div className="flex">
-                <div>{comment.comment}</div>
-                <Button>수정</Button>
-              </div>
-              {!childCommentState[commentId]?.editMode && (
-                <Button
-                  onClick={() =>
-                    setChildCommentState((prev) => {
-                      return {
-                        ...prev,
-                        [commentId]: {
-                          editMode: !childCommentState[commentId].editMode,
-                          text: childCommentState[commentId].text,
-                        },
-                      };
-                    })
-                  }
-                >
-                  댓글 남기기
-                </Button>
-              )}
-              {childCommentState[commentId]?.editMode && (
-                <div>
-                  <Textarea
-                    value={childCommentState[commentId].text}
-                    onChange={(e) => {
-                      setChildCommentState((prev) => {
-                        return {
-                          ...prev,
-                          [commentId]: {
-                            editMode: childCommentState[commentId].editMode,
-                            text: e.target.value,
-                          },
-                        };
-                      });
-                    }}
-                  />
-                  <Button onClick={() => uploadComment({ parentId: commentId })}>저장</Button>
-                  <Button
-                    onClick={() =>
-                      setChildCommentState((prev) => {
-                        return {
-                          ...prev,
-                          [commentId]: {
-                            editMode: !childCommentState[commentId].editMode,
-                            text: childCommentState[commentId].text,
-                          },
-                        };
-                      })
-                    }
-                  >
-                    취소
-                  </Button>
-                </div>
-              )}
-              {children.length > 0 &&
-                children.map((child: IComment, index) => {
-                  return (
-                    <div key={`childComment_${index}`} className="ml-10">
-                      <div className="flex items-center py-3 mb-5 ">
-                        <AvatarInCard avatarImageSrc={child.profileImage} />
-                        <div>{child.nickName}</div>
-                      </div>
-                      <div className="flex">
-                        <div>{child.comment}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-              <hr />
-            </div>
-          );
-        })} */}
       </div>
     </>
   );
