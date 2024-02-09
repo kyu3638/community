@@ -100,11 +100,11 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
         profileImage: user?.profileImage as string,
         comment: parentId ? commentsState[parentId].text : comment,
         parentId: parentId || null,
+        like: [],
         createdAt: new Date(),
         updatedAt: new Date(),
         isRemoved: false,
       };
-      console.log(``)
       await addDoc(collection(db, 'comments'), newComment);
       if (parentId) {
         setCommentsState((prev) => {
