@@ -166,6 +166,7 @@ const Comments = ({
               editCommentModeHandler={editCommentModeHandler}
               editCommentTextHandler={editCommentTextHandler}
               updateCommentAndChangeMode={updateCommentAndChangeMode}
+              likeComment={likeComment}
             />
             <hr />
           </div>

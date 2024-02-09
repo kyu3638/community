@@ -14,6 +14,7 @@ interface IChildCommentsHandle {
   editCommentModeHandler: (commentId: string, mode: CommentStateMode) => void;
   editCommentTextHandler: (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   updateCommentAndChangeMode: (commentId: string, text: string) => void;
+  likeComment: ({ commentId, type }: { commentId: string; type: string }) => void;
 }
 
 const ChildComments = ({
@@ -23,6 +24,7 @@ const ChildComments = ({
   editCommentModeHandler,
   editCommentTextHandler,
   updateCommentAndChangeMode,
+  likeComment,
 }: IChildCommentsHandle) => {
   const { userUid } = useUserUid();
 
@@ -44,7 +46,11 @@ const ChildComments = ({
                     <div>{child.comment}</div>
                     <div className="flex items-center">
                       <div className="flex gap-3">
-                        {isLike ? <FcLike /> : <FaRegHeart />}
+                        {isLike ? (
+                          <FcLike onClick={() => likeComment({ commentId: childId, type: 'removeLike' })} />
+                        ) : (
+                          <FaRegHeart onClick={() => likeComment({ commentId: childId, type: 'addLike' })} />
+                        )}
                         <span>{child.like.length}</span>
                       </div>
                       {userUid === child.uid && (
