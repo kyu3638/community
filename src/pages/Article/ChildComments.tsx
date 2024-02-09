@@ -4,6 +4,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { CommentStateMode, IChildComment, IChildCommentState, IRemoveCommentFuncArg } from '@/types/common';
 import React from 'react';
+import { FaRegHeart } from 'react-icons/fa';
+import { FcLike } from 'react-icons/fc';
 
 interface IChildCommentsHandle {
   commentsState: IChildCommentState;
@@ -29,6 +31,7 @@ const ChildComments = ({
       {children &&
         children.map((child: IChildComment, index: number) => {
           const childId = child.commentId;
+          const isLike = child.like.includes(userUid as string);
           return (
             <div key={`childComment_${index}`} className="ml-10">
               <div className="flex items-center py-3 mb-5 ">
@@ -36,13 +39,30 @@ const ChildComments = ({
                 <div>{child.nickName}</div>
               </div>
               <div className="flex justify-between">
-                {commentsState[childId]?.editMode === 'view' && <div>{child.comment}</div>}
-                {commentsState[childId]?.editMode === 'edit' && (
-                  <Textarea value={commentsState[childId]?.text} onChange={(e) => editCommentTextHandler(childId, e)} />
-                )}
-                {userUid === child.uid && (
+                {commentsState[childId]?.editMode === 'view' && (
                   <>
-                    {commentsState[childId]?.editMode === 'edit' && (
+                    <div>{child.comment}</div>
+                    <div className="flex items-center">
+                      <div className="flex gap-3">
+                        {isLike ? <FcLike /> : <FaRegHeart />}
+                        <span>{child.like.length}</span>
+                      </div>
+                      {userUid === child.uid && (
+                        <>
+                          <Button onClick={() => editCommentModeHandler(childId, 'edit')}>수정</Button>
+                          <Button onClick={() => removeComment({ commentId: childId })}>삭제</Button>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+                {commentsState[childId]?.editMode === 'edit' && (
+                  <div className="flex justify-between">
+                    <Textarea
+                      value={commentsState[childId]?.text}
+                      onChange={(e) => editCommentTextHandler(childId, e)}
+                    />
+                    {userUid === child.uid && (
                       <>
                         <Button onClick={() => updateCommentAndChangeMode(childId, commentsState[childId].text)}>
                           저장
@@ -50,13 +70,7 @@ const ChildComments = ({
                         <Button onClick={() => editCommentModeHandler(childId, 'view')}>취소</Button>
                       </>
                     )}
-                    {commentsState[childId]?.editMode === 'view' && (
-                      <>
-                        <Button onClick={() => editCommentModeHandler(childId, 'edit')}>수정</Button>
-                        <Button onClick={() => removeComment({ commentId: childId })}>삭제</Button>
-                      </>
-                    )}
-                  </>
+                  </div>
                 )}
               </div>
             </div>

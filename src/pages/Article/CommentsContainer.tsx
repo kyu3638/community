@@ -105,7 +105,6 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
         updatedAt: new Date(),
         isRemoved: false,
       };
-      console.log(``);
       await addDoc(collection(db, 'comments'), newComment);
       if (parentId) {
         setCommentsState((prev) => {
