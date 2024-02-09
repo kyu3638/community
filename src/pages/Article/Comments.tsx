@@ -88,7 +88,7 @@ const Comments = ({
   };
   const { mutate: likeComment } = useMutation({
     mutationFn: onLikeComment,
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['comments'] });
     },
   });
