@@ -56,6 +56,7 @@ export interface IComment {
   profileImage: string;
   comment: string;
   parentId: string | null;
+  like: string[];
   createdAt: Date;
   updatedAt: Date;
   isRemoved: boolean;
