@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import Comments from './CommentsContainer';
+// import Comments from './CommentsContainer';
 
 interface ILikeFuncArg {
   type: string;
@@ -21,7 +22,8 @@ const Article = () => {
   const articleId = params.articleId;
   const [myArticle, setMyArticle] = useState(false);
 
-  const { userUid } = useUserUid();
+  const { userUid, userData } = useUserUid();
+  console.log(userData);
 
   const queryClient = useQueryClient();
 

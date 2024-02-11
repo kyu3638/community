@@ -1,3 +1,4 @@
+import { DocumentData } from 'firebase/firestore';
 import { ReactNode } from 'react';
 
 export interface IChildrenProps {
@@ -6,13 +7,14 @@ export interface IChildrenProps {
 
 export interface IUserUidContext {
   userUid: UserUidType;
+  userData: IUser | null;
   updateUserUid: (arg: UserUidType) => void;
   isLogin: boolean;
 }
 
 type UserUidType = string | null;
 
-export interface IUser {
+export interface IUser extends DocumentData {
   uid: string;
   email: string;
   nickName: string;
@@ -69,10 +71,6 @@ export interface IParentComment extends IComment {
 
 export interface IChildComment extends IComment {
   commentId: string;
-}
-
-export interface ICommentsProps {
-  articleId: string;
 }
 
 export interface IChildCommentState {

@@ -77,7 +77,6 @@ const Comments = ({
 
   const onLikeComment = async ({ commentId: commentId, type: type }: { commentId: string; type: string }) => {
     try {
-      console.log(`commentId : ${commentId}, type : ${type}`);
       const command = type === 'addLike' ? arrayUnion : arrayRemove;
 
       const commentRef = doc(db, 'comments', commentId);
@@ -99,7 +98,6 @@ const Comments = ({
         const comment = data;
         const commentId = comment.commentId;
         const children = comment.children;
-        console.log(comment.like);
         const isLike = comment.like.includes(userUid as string);
         return (
           <div key={commentId}>
@@ -146,6 +144,15 @@ const Comments = ({
                 </div>
               )}
             </div>
+            <ChildComments
+              commentsState={commentsState}
+              removeComment={removeComment}
+              children={children}
+              editCommentModeHandler={editCommentModeHandler}
+              editCommentTextHandler={editCommentTextHandler}
+              updateCommentAndChangeMode={updateCommentAndChangeMode}
+              likeComment={likeComment}
+            />
             {commentsState[commentId]?.editMode === 'view' && (
               <Button onClick={() => editCommentModeHandler(commentId, 'create')}>대댓글 남기기</Button>
             )}
@@ -159,15 +166,6 @@ const Comments = ({
                 <Button onClick={() => editCommentModeHandler(commentId, 'view')}>취소</Button>
               </div>
             )}
-            <ChildComments
-              commentsState={commentsState}
-              removeComment={removeComment}
-              children={children}
-              editCommentModeHandler={editCommentModeHandler}
-              editCommentTextHandler={editCommentTextHandler}
-              updateCommentAndChangeMode={updateCommentAndChangeMode}
-              likeComment={likeComment}
-            />
             <hr />
           </div>
         );
