@@ -6,7 +6,7 @@ export interface IChildrenProps {
 }
 
 export interface IUserUidContext {
-  userUid: UserUidType;
+  userUid: string;
   userData: IUser | null;
   updateUserUid: (arg: UserUidType) => void;
   isLogin: boolean;

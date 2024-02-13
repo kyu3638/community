@@ -5,6 +5,8 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  DocumentData,
+  QueryDocumentSnapshot,
   addDoc,
   arrayRemove,
   arrayUnion,
@@ -24,9 +26,32 @@ interface ICommentsProps {
   articleId: string;
 }
 
+interface ICommentFromDB extends QueryDocumentSnapshot {
+  articleId: string;
+  uid: string;
+  nickName: string;
+  profileImage: string;
+  comment: string;
+  like: string[];
+  createdAt: Date;
+  isRemoved: boolean;
+}
+
+interface IChildComment extends ICommentFromDB {
+  mode: string;
+}
+interface IParentComment extends IChildComment {
+  children: IChildComment[];
+  mode: string;
+}
+
+interface IParentState {
+  [id: string]: IParentComment;
+}
+
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const [createParentCommentInput, setCreateParentCommentInput] = useState<string>('');
-  const [parentsState, setParentsState] = useState({});
+  const [parentsState, setParentsState] = useState<IParentState>({});
 
   const queryClient = useQueryClient();
   const { userUid, userData } = useUserUid();
@@ -38,22 +63,26 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const fetchParentComments = async () => {
     const parentCommentsRef = collection(db, `feeds/${articleId}/parentComments`);
     const q = query(parentCommentsRef, orderBy('createdAt', 'asc'));
-    const response = (await getDocs(q)).docs;
+    const response = (await getDocs(q)).docs as ICommentFromDB[];
     return response;
   };
   const { data: parents } = useQuery({
     queryKey: ['parentComments'],
     queryFn: fetchParentComments,
   });
+  /** 부모 댓글 불러오면 children, mode 추가하여 객체형태로 state생성 */
   useEffect(() => {
     if (parents) {
-      const parentsObj = {};
+      let parentsObj = {};
       parents.forEach((parent) => {
         const parentId = parent.id;
-        parentsObj[parentId] = {
-          ...parent.data(),
-          children: [],
-          mode: 'view',
+        parentsObj = {
+          ...parentsObj,
+          [parentId]: {
+            ...parent.data(),
+            children: [],
+            mode: 'view',
+          },
         };
       });
       setParentsState(parentsObj);
@@ -102,7 +131,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
-  const onLikeParentComment = async ({ commentId, type }) => {
+  const onLikeParentComment = async ({ commentId, type }: { commentId: string; type: string }) => {
     const command = type === 'addLike' ? arrayUnion : arrayRemove;
 
     const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
@@ -115,7 +144,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
-  const onRemoveParentComment = async ({ commentId }) => {
+  const onRemoveParentComment = async ({ commentId }: { commentId: string }) => {
     const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
     await deleteDoc(commentRef);
   };
@@ -139,7 +168,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     });
   };
   /** 수정된 텍스트 업데이트 */
-  const onEditParentComment = async ({ commentId }) => {
+  const onEditParentComment = async ({ commentId }: { commentId: string }) => {
     console.log(parentsState[commentId].comment);
     const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
     await updateDoc(commentRef, { comment: parentsState[commentId].comment });
@@ -161,10 +190,11 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
         <div className="flex flex-col">
           {Object.entries(parentsState).map(([id, parentComment]) => {
             const parentId = id;
-            const parent = parentComment;
+            const parent = parentComment as IParentComment;
             const isLike = parent.like.includes(userUid);
             const isCommentWriter = parent.uid === userUid;
-            console.log(parentsState[parentId]);
+            const isView = parent.mode === 'view';
+            const isEdit = parent.mode === 'edit';
             return (
               <div key={parentId} className="border">
                 <div className="flex items-center gap-5">
@@ -172,7 +202,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                   {parent.nickName}
                 </div>
                 <div className="flex justify-between">
-                  {parent.mode === 'view' && (
+                  {isView && (
                     <>
                       <span>{parent.comment}</span>
                       <div className="flex gap-3">
@@ -190,7 +220,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       </div>
                     </>
                   )}
-                  {parent.mode === 'edit' && (
+                  {isEdit && (
                     <>
                       <Textarea
                         value={parentsState[parentId].comment}
