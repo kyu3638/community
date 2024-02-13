@@ -1,10 +1,13 @@
+import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
-import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
+import { FaRegHeart } from 'react-icons/fa';
+import { FcLike } from 'react-icons/fc';
 
 interface ICommentsProps {
   articleId: string;
@@ -12,9 +15,10 @@ interface ICommentsProps {
 
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const [createParentCommentInput, setCreateParentCommentInput] = useState<string>('');
-  const [parentIds, setParentIds] = useState<string[]>([]);
+  const [parentsState, setParentsState] = useState({});
 
-  const { userData } = useUserUid();
+  const queryClient = useQueryClient();
+  const { userUid, userData } = useUserUid();
 
   const onChangeCreateParentCommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCreateParentCommentInput(e.target.value);
@@ -32,7 +36,16 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   });
   useEffect(() => {
     if (parents) {
-      setParentIds(parents.map((comment) => comment.id));
+      const parentsObj = {};
+      parents.forEach((parent) => {
+        const parentId = parent.id;
+        parentsObj[parentId] = {
+          ...parent.data(),
+          children: [],
+          mode: 'view',
+        };
+      });
+      setParentsState(parentsObj);
     }
   }, [parents]);
 
@@ -43,7 +56,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     return response;
   };
   const { data: children } = useQueries({
-    queries: parentIds.map((parentId) => ({
+    queries: Object.keys(parentsState).map((parentId) => ({
       queryKey: ['post', parentId],
       queryFn: () => fetchChildComments(parentId),
     })),
@@ -73,6 +86,9 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   };
   const { mutate: uploadParentComment } = useMutation({
     mutationFn: onCreateParentComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+    },
   });
 
   return (
@@ -83,11 +99,33 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
           <Button onClick={() => uploadParentComment()}>작성</Button>
         </div>
         <div className="flex flex-col">
-          {parents?.map((parent) => {
-            const parentComment = parent.data();
+          {Object.entries(parentsState).map(([id, parentComment]) => {
+            const parentId = id;
+            const parent = parentComment;
+            const isLike = parent.like.includes(userUid);
+            const isCommentWriter = parent.uid === userUid;
             return (
-              <div key={parent.id} className="border">
-                {parentComment.comment}
+              <div key={parentId} className="border">
+                <div className="flex items-center gap-5">
+                  <AvatarInCard avatarImageSrc={parent.profileImage} />
+                  {parent.nickName}
+                </div>
+                <div className="flex justify-between">
+                  {parent.mode === 'view' && (
+                    <>
+                      <span>{parent.comment}</span>
+                      <div className="flex gap-3">
+                        {isLike ? <FcLike /> : <FaRegHeart />}
+                        {isCommentWriter && (
+                          <>
+                            <span>수정</span>
+                            <span>삭제</span>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             );
           })}
