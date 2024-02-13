@@ -42,6 +42,7 @@ interface IChildComment extends ICommentFromDB {
 interface IParentComment extends ICommentFromDB {
   children: IChildrenState;
   mode: string;
+  newChildCreateMode: boolean;
   newChildText: string;
 }
 
@@ -86,6 +87,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             ...parent.data(),
             children: {},
             mode: 'view',
+            newChildCreateMode: false,
             newChildText: '',
           },
         };
@@ -107,7 +109,6 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       enabled: !!parentsState,
     })),
     combine: (results) => {
-      console.log(results);
       return {
         data: results.map((result) => result.data),
         pending: results.some((result) => result.isPending),
@@ -120,8 +121,6 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       childrenData.forEach((data) => {
         const parentId = data?.parentId as string;
         const children = data?.response;
-        console.log(`parentId`, parentId);
-        console.log(`children`, children);
         children?.forEach((child) => {
           setParentsState((prevState) => {
             return {
@@ -139,8 +138,6 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       });
     }
   }, [combined, parents]);
-  console.log(`부모댓글상태관리`, parentsState);
-  console.log(`children`, combined.data);
 
   /** 부모 댓글 생성 함수 */
   const onCreateParentComment = async () => {
@@ -165,16 +162,35 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
-  const onLikeParentComment = async ({ commentId, type }: { commentId: string; type: string }) => {
+  const onLikeComment = async ({
+    parentId,
+    childId,
+    type,
+  }: {
+    parentId: string;
+    childId?: string | null;
+    type: string;
+  }) => {
     const command = type === 'addLike' ? arrayUnion : arrayRemove;
-
-    const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
+    let commentRef;
+    if (!childId) {
+      commentRef = doc(db, `feeds/${articleId}/parentComments`, parentId);
+    } else {
+      commentRef = doc(db, `feeds/${articleId}/parentComments/${parentId}/childComments`, childId);
+    }
     await updateDoc(commentRef, { like: command(userUid) });
+    return { parentId, childId };
   };
-  const { mutate: likeParentComment } = useMutation({
-    mutationFn: onLikeParentComment,
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+  const { mutate: likeComment } = useMutation({
+    mutationFn: onLikeComment,
+    onSettled: (data) => {
+      const parentId = data?.parentId;
+      const childId = data?.childId;
+      if (!childId) {
+        queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['childComments', parentId] });
+      }
     },
   });
 
@@ -268,7 +284,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const { mutate: editParentComment } = useMutation({
     mutationFn: onEditParentComment,
     onSettled: (data) => {
-      const parentId = data?.parentId;
+      const parentId = data?.parentId as string;
       const childId = data?.childId;
       if (!childId) {
         queryClient.invalidateQueries({ queryKey: ['parentComments'] });
@@ -301,11 +317,31 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const { mutate: uploadChildComment } = useMutation({
     mutationFn: onCreateNewChild,
     onSettled: (data) => {
-      const parentId = data;
+      const parentId = data as string;
       queryClient.invalidateQueries({ queryKey: ['childComments', parentId] });
+      setParentsState((prevState) => {
+        return {
+          ...prevState,
+          [parentId]: {
+            ...prevState[parentId],
+            newChildCreateMode: !prevState[parentId].newChildCreateMode,
+          } as IParentComment,
+        };
+      });
     },
   });
 
+  const onChangeChildCreateMode = (parentId: string) => {
+    setParentsState((prevState) => {
+      return {
+        ...prevState,
+        [parentId]: {
+          ...prevState[parentId],
+          newChildCreateMode: !prevState[parentId].newChildCreateMode,
+        } as IParentComment,
+      };
+    });
+  };
   return (
     <>
       <div className="flex flex-col">
@@ -321,6 +357,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             const isCommentWriter = parent.uid === userUid;
             const isView = parent.mode === 'view';
             const isEdit = parent.mode === 'edit';
+            const isCreateChildMode = parent.newChildCreateMode;
             const children = parent.children;
             return (
               <div key={parentId} className="border">
@@ -334,9 +371,9 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       <span>{parent.comment}</span>
                       <div className="flex gap-3">
                         {isLike ? (
-                          <FcLike onClick={() => likeParentComment({ commentId: parentId, type: 'removeLike' })} />
+                          <FcLike onClick={() => likeComment({ parentId: parentId, type: 'removeLike' })} />
                         ) : (
-                          <FaRegHeart onClick={() => likeParentComment({ commentId: parentId, type: 'addLike' })} />
+                          <FaRegHeart onClick={() => likeComment({ parentId: parentId, type: 'addLike' })} />
                         )}
                         {isCommentWriter && (
                           <>
@@ -361,14 +398,6 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                   )}
                 </div>
                 <div className="ml-10">
-                  <span>{`=> 대댓글 추가하기`}</span>
-                  <div className="flex items-center">
-                    <Textarea
-                      value={parentsState[parentId].newChildText}
-                      onChange={(e) => onChangeNewChildText(parentId, e)}
-                    />
-                    <Button onClick={() => uploadChildComment({ commentId: parentId })}>저장</Button>
-                  </div>
                   {/* 자식 댓글 렌더링 되는 부분 */}
                   {children &&
                     Object.entries(children).map(([childId, childComment]) => {
@@ -388,7 +417,19 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                               <>
                                 <span>{child.comment}</span>
                                 <div className="flex gap-3">
-                                  {isLike ? <FcLike onClick={() => {}} /> : <FaRegHeart onClick={() => {}} />}
+                                  {isLike ? (
+                                    <FcLike
+                                      onClick={() =>
+                                        likeComment({ parentId: parentId, childId: childId, type: 'removeLike' })
+                                      }
+                                    />
+                                  ) : (
+                                    <FaRegHeart
+                                      onClick={() =>
+                                        likeComment({ parentId: parentId, childId: childId, type: 'addLike' })
+                                      }
+                                    />
+                                  )}
                                   {isCommentWriter && (
                                     <>
                                       <span onClick={() => onChangeChildCommentMode(parentId, childId, 'edit')}>
@@ -420,6 +461,16 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         </div>
                       );
                     })}
+                  <span onClick={() => onChangeChildCreateMode(parentId)}>{`=> 대댓글 추가하기`}</span>
+                  {isCreateChildMode && (
+                    <div className="flex items-center">
+                      <Textarea
+                        value={parentsState[parentId].newChildText}
+                        onChange={(e) => onChangeNewChildText(parentId, e)}
+                      />
+                      <Button onClick={() => uploadChildComment({ commentId: parentId })}>저장</Button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
