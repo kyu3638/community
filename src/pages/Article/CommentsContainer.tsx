@@ -126,17 +126,21 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
+  /** 댓글 수정 모드 */
   const onChangeParentCommentMode = (commentId, type) => {
     setParentsState((prevState) => {
       return { ...prevState, [commentId]: { ...prevState[commentId], mode: type } };
     });
   };
+  /** 댓글 수정 textArea 텍스트 입력 */
   const onChangeParentCommentEditText = (commentId, e) => {
     setParentsState((prevState) => {
       return { ...prevState, [commentId]: { ...prevState[commentId], comment: e.target.value } };
     });
   };
-  const onEditParentComment = async ({ commentId, editText }) => {
+  /** 수정된 텍스트 업데이트 */
+  const onEditParentComment = async ({ commentId }) => {
+    console.log(parentsState[commentId].comment);
     const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
     await updateDoc(commentRef, { comment: parentsState[commentId].comment });
   };
@@ -160,6 +164,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             const parent = parentComment;
             const isLike = parent.like.includes(userUid);
             const isCommentWriter = parent.uid === userUid;
+            console.log(parentsState[parentId]);
             return (
               <div key={parentId} className="border">
                 <div className="flex items-center gap-5">
@@ -192,7 +197,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         onChange={(e) => onChangeParentCommentEditText(parentId, e)}
                       />
                       <div className="flex">
-                        <span>저장</span>
+                        <span onClick={() => editParentComment({ commentId: parentId })}>저장</span>
                         <span onClick={() => onChangeParentCommentMode(parentId, 'view')}>취소</span>
                       </div>
                     </>
