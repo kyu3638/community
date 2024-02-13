@@ -42,6 +42,7 @@ interface IChildComment extends ICommentFromDB {
 interface IParentComment extends ICommentFromDB {
   children: IChildComment[];
   mode: string;
+  newChildText: string;
 }
 
 interface IParentsState {
@@ -81,6 +82,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             ...parent.data(),
             children: [],
             mode: 'view',
+            newChildText: '',
           },
         };
       });
@@ -127,6 +129,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     mutationFn: onCreateParentComment,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+      setCreateParentCommentInput('');
     },
   });
 
@@ -174,6 +177,29 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   };
   const { mutate: editParentComment } = useMutation({
     mutationFn: onEditParentComment,
+  });
+
+  const onChangeNewChildText = (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setParentsState((prevState) => {
+      return { ...prevState, [commentId]: { ...prevState[commentId], newChildText: e.target.value } as IParentComment };
+    });
+  };
+  const onCreateNewChild = async ({ commentId }: { commentId: string }) => {
+    const newChildComment = {
+      articleId,
+      uid: userUid,
+      nickName: userData?.nickName,
+      profileImage: userData?.profileImage,
+      comment: parentsState[commentId].newChildText,
+      like: [],
+      createdAt: new Date(),
+      isRemoved: false,
+    };
+    const newChildRef = collection(db, `feeds/${articleId}/parentComments/${commentId}/childComments`);
+    await addDoc(newChildRef, newChildComment);
+  };
+  const { mutate: uploadChildComment } = useMutation({
+    mutationFn: onCreateNewChild,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['parentComments'] });
     },
@@ -231,6 +257,16 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       </div>
                     </>
                   )}
+                </div>
+                <div className="ml-10">
+                  <span>{`=> 대댓글 추가하기`}</span>
+                  <div className="flex items-center">
+                    <Textarea
+                      value={parentsState[parentId].newChildText}
+                      onChange={(e) => onChangeNewChildText(parentId, e)}
+                    />
+                    <Button onClick={() => uploadChildComment({ commentId: parentId })}>저장</Button>
+                  </div>
                 </div>
               </div>
             );
