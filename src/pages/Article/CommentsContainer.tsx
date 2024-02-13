@@ -118,7 +118,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   useEffect(() => {
     if (combined.data) {
       const childrenData = combined.data;
-      childrenData.forEach((data) => {
+      childrenData?.forEach((data) => {
         const parentId = data?.parentId as string;
         const children = data?.response;
         children?.forEach((child) => {
