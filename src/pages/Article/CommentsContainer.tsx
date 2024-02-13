@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
-import { useQueries, useQuery } from '@tanstack/react-query';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
+import { addDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 
 interface ICommentsProps {
@@ -12,6 +13,8 @@ interface ICommentsProps {
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const [createParentCommentInput, setCreateParentCommentInput] = useState<string>('');
   const [parentIds, setParentIds] = useState<string[]>([]);
+
+  const { userData } = useUserUid();
 
   const onChangeCreateParentCommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCreateParentCommentInput(e.target.value);
@@ -53,13 +56,31 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   });
   console.log(children);
 
+  /** 부모 댓글 생성 함수 */
+  const onCreateParentComment = async () => {
+    const newParentComment = {
+      articleId,
+      uid: userData?.uid,
+      nickName: userData?.nickName,
+      profileImage: userData?.profileImage,
+      comment: createParentCommentInput,
+      like: [],
+      createdAt: new Date(),
+      inRemoved: false,
+    };
+    const ref = collection(db, `feeds/${articleId}/parentComments`);
+    await addDoc(ref, newParentComment);
+  };
+  const { mutate: uploadParentComment } = useMutation({
+    mutationFn: onCreateParentComment,
+  });
 
   return (
     <>
       <div className="flex flex-col">
         <div className="flex items-center">
           <Textarea value={createParentCommentInput} onChange={onChangeCreateParentCommentInput} />
-          <Button>작성</Button>
+          <Button onClick={() => uploadParentComment()}>작성</Button>
         </div>
         <div className="flex flex-col">
           {parents?.map((parent) => {
