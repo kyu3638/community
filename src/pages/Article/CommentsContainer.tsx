@@ -10,7 +10,6 @@ import {
   arrayRemove,
   arrayUnion,
   collection,
-  deleteDoc,
   doc,
   getDocs,
   orderBy,
@@ -20,6 +19,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { FaRegHeart } from 'react-icons/fa';
 import { FcLike } from 'react-icons/fc';
+import unknownImage from '../../../public/unknown.png';
 
 interface ICommentsProps {
   articleId: string;
@@ -40,13 +40,17 @@ interface IChildComment extends ICommentFromDB {
   mode: string;
 }
 interface IParentComment extends ICommentFromDB {
-  children: IChildComment[];
+  children: IChildrenState;
   mode: string;
   newChildText: string;
 }
 
 interface IParentsState {
   [id: string]: IParentComment;
+}
+
+interface IChildrenState {
+  [id: string]: IChildComment;
 }
 
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
@@ -80,7 +84,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
           ...parentsObj,
           [parentId]: {
             ...parent.data(),
-            children: [],
+            children: {},
             mode: 'view',
             newChildText: '',
           },
@@ -92,23 +96,51 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
 
   const fetchChildComments = async (parentId: string) => {
     const childCommentsRef = collection(db, `feeds/${articleId}/parentComments/${parentId}/childComments`);
-    const q = query(childCommentsRef);
+    const q = query(childCommentsRef, orderBy('createdAt', 'asc'));
     const response = (await getDocs(q)).docs;
-    return response;
+    return { parentId, response };
   };
-  const { data: children } = useQueries({
+  const combined = useQueries({
     queries: Object.keys(parentsState).map((parentId) => ({
-      queryKey: ['post', parentId],
+      queryKey: ['childComments', parentId],
       queryFn: () => fetchChildComments(parentId),
+      enabled: !!parentsState,
     })),
     combine: (results) => {
+      console.log(results);
       return {
         data: results.map((result) => result.data),
         pending: results.some((result) => result.isPending),
       };
     },
   });
-  console.log(children);
+  useEffect(() => {
+    if (combined.data) {
+      const childrenData = combined.data;
+      childrenData.forEach((data) => {
+        const parentId = data?.parentId as string;
+        const children = data?.response;
+        console.log(`parentId`, parentId);
+        console.log(`children`, children);
+        children?.forEach((child) => {
+          setParentsState((prevState) => {
+            return {
+              ...prevState,
+              [parentId]: {
+                ...prevState[parentId],
+                children: {
+                  ...prevState[parentId].children,
+                  [child.id]: { ...child.data(), mode: 'view' },
+                } as IChildrenState,
+              } as IParentComment,
+            };
+          });
+        });
+      });
+    }
+  }, [combined, parents]);
+  console.log(`부모댓글상태관리`, parentsState);
+  console.log(`children`, combined.data);
 
   /** 부모 댓글 생성 함수 */
   const onCreateParentComment = async () => {
@@ -146,37 +178,104 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
-  const onRemoveParentComment = async ({ commentId }: { commentId: string }) => {
-    const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
-    await deleteDoc(commentRef);
+  const onRemoveComment = async ({ parentId, childId = null }: { parentId: string; childId?: string | null }) => {
+    let commentRef;
+    if (!childId) {
+      commentRef = doc(db, `feeds/${articleId}/parentComments`, parentId);
+    } else {
+      commentRef = doc(db, `feeds/${articleId}/parentComments/${parentId}/childComments`, childId);
+    }
+    await updateDoc(commentRef, {
+      uid: '',
+      comment: '삭제된 댓글입니다.',
+      isRemoved: true,
+      nickName: 'unknown',
+      profileImage: unknownImage,
+    });
+    return { parentId, childId };
   };
-  const { mutate: removeParentComment } = useMutation({
-    mutationFn: onRemoveParentComment,
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+  const { mutate: removeComment } = useMutation({
+    mutationFn: onRemoveComment,
+    onSettled: (data) => {
+      const parentId = data?.parentId;
+      const childId = data?.childId;
+      if (!childId) {
+        queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['childComments', parentId] });
+      }
     },
   });
 
-  /** 댓글 수정 모드 */
+  /** 부모 댓글 수정 모드 변경 */
   const onChangeParentCommentMode = (commentId: string, type: string) => {
     setParentsState((prevState) => {
       return { ...prevState, [commentId]: { ...prevState[commentId], mode: type } as IParentComment };
     });
   };
-  /** 댓글 수정 textArea 텍스트 입력 */
+  /** 자식 댓글 수정 모드 변경 */
+  const onChangeChildCommentMode = (parentId: string, commentId: string, type: string) => {
+    setParentsState((prevState) => {
+      return {
+        ...prevState,
+        [parentId]: {
+          ...prevState[parentId],
+          children: {
+            ...prevState[parentId].children,
+            [commentId]: { ...prevState[parentId].children[commentId], mode: type },
+          },
+        } as IParentComment,
+      };
+    });
+  };
+  /** 부모 댓글 수정 textArea 텍스트 입력 */
   const onChangeParentCommentEditText = (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setParentsState((prevState) => {
       return { ...prevState, [commentId]: { ...prevState[commentId], comment: e.target.value } as IParentComment };
     });
   };
+  /** 자식 댓글 수정 textArea 텍스트 입력 */
+  const onChangeChildCommentEditText = (
+    parentId: string,
+    commentId: string,
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setParentsState((prevState) => {
+      return {
+        ...prevState,
+        [parentId]: {
+          ...prevState[parentId],
+          children: {
+            ...prevState[parentId].children,
+            [commentId]: { ...prevState[parentId].children[commentId], comment: e.target.value },
+          },
+        } as IParentComment,
+      };
+    });
+  };
   /** 수정된 텍스트 업데이트 */
-  const onEditParentComment = async ({ commentId }: { commentId: string }) => {
-    console.log(parentsState[commentId].comment);
-    const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
-    await updateDoc(commentRef, { comment: parentsState[commentId].comment });
+  const onEditParentComment = async ({ parentId, childId = null }: { parentId: string; childId?: string | null }) => {
+    let commentRef;
+    if (!childId) {
+      commentRef = doc(db, `feeds/${articleId}/parentComments`, parentId);
+      await updateDoc(commentRef, { comment: parentsState[parentId].comment });
+    } else {
+      commentRef = doc(db, `feeds/${articleId}/parentComments/${parentId}/childComments`, childId);
+      await updateDoc(commentRef, { comment: parentsState[parentId].children[childId].comment });
+    }
+    return { parentId, childId };
   };
   const { mutate: editParentComment } = useMutation({
     mutationFn: onEditParentComment,
+    onSettled: (data) => {
+      const parentId = data?.parentId;
+      const childId = data?.childId;
+      if (!childId) {
+        queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['childComments', parentId] });
+      }
+    },
   });
 
   const onChangeNewChildText = (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -197,11 +296,13 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     };
     const newChildRef = collection(db, `feeds/${articleId}/parentComments/${commentId}/childComments`);
     await addDoc(newChildRef, newChildComment);
+    return commentId;
   };
   const { mutate: uploadChildComment } = useMutation({
     mutationFn: onCreateNewChild,
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+    onSettled: (data) => {
+      const parentId = data;
+      queryClient.invalidateQueries({ queryKey: ['childComments', parentId] });
     },
   });
 
@@ -220,6 +321,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             const isCommentWriter = parent.uid === userUid;
             const isView = parent.mode === 'view';
             const isEdit = parent.mode === 'edit';
+            const children = parent.children;
             return (
               <div key={parentId} className="border">
                 <div className="flex items-center gap-5">
@@ -239,7 +341,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         {isCommentWriter && (
                           <>
                             <span onClick={() => onChangeParentCommentMode(parentId, 'edit')}>수정</span>
-                            <span onClick={() => removeParentComment({ commentId: parentId })}>삭제</span>
+                            <span onClick={() => removeComment({ parentId: parentId })}>삭제</span>
                           </>
                         )}
                       </div>
@@ -252,7 +354,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         onChange={(e) => onChangeParentCommentEditText(parentId, e)}
                       />
                       <div className="flex">
-                        <span onClick={() => editParentComment({ commentId: parentId })}>저장</span>
+                        <span onClick={() => editParentComment({ parentId: parentId })}>저장</span>
                         <span onClick={() => onChangeParentCommentMode(parentId, 'view')}>취소</span>
                       </div>
                     </>
@@ -267,6 +369,57 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                     />
                     <Button onClick={() => uploadChildComment({ commentId: parentId })}>저장</Button>
                   </div>
+                  {/* 자식 댓글 렌더링 되는 부분 */}
+                  {children &&
+                    Object.entries(children).map(([childId, childComment]) => {
+                      const child = childComment;
+                      const isLike = child.like.includes(userUid);
+                      const isCommentWriter = child.uid === userUid;
+                      const isViewChild = child.mode === 'view';
+                      const isEditChild = child.mode === 'edit';
+                      return (
+                        <div key={childId} className="border border-red-500">
+                          <div className="flex items-center gap-5">
+                            <AvatarInCard avatarImageSrc={child.profileImage} />
+                            {child.nickName}
+                          </div>
+                          <div className="flex justify-between">
+                            {isViewChild && (
+                              <>
+                                <span>{child.comment}</span>
+                                <div className="flex gap-3">
+                                  {isLike ? <FcLike onClick={() => {}} /> : <FaRegHeart onClick={() => {}} />}
+                                  {isCommentWriter && (
+                                    <>
+                                      <span onClick={() => onChangeChildCommentMode(parentId, childId, 'edit')}>
+                                        수정
+                                      </span>
+                                      <span onClick={() => removeComment({ parentId: parentId, childId: childId })}>
+                                        삭제
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                            {isEditChild && (
+                              <>
+                                <Textarea
+                                  value={parentsState[parentId].children[childId].comment}
+                                  onChange={(e) => onChangeChildCommentEditText(parentId, childId, e)}
+                                />
+                                <div className="flex">
+                                  <span onClick={() => editParentComment({ parentId: parentId, childId: childId })}>
+                                    저장
+                                  </span>
+                                  <span onClick={() => onChangeChildCommentMode(parentId, childId, 'view')}>취소</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             );
