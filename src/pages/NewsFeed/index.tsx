@@ -6,8 +6,13 @@ import { collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
 import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import { Link } from 'react-router-dom';
+import { FaRegHeart } from 'react-icons/fa';
+import { useUserUid } from '@/contexts/LoginUserState';
+import { FcLike } from 'react-icons/fc';
 
 const Newsfeed = () => {
+  const { userUid, userData } = useUserUid();
+  console.log(userData);
   const fetchNewsfeed = async () => {
     try {
       const collectionRef = collection(db, 'feeds');
@@ -37,6 +42,9 @@ const Newsfeed = () => {
         {newsfeed?.map((query, index) => {
           const feed = query.data();
           const feedId = query.id;
+          const isLike = feed.like.includes(userUid);
+          console.log(isLike);
+          const countLike = feed.like.length;
 
           return (
             <ArticleWrap key={`newsfeed-${index}`}>
@@ -46,11 +54,18 @@ const Newsfeed = () => {
                   <span className="font-bold">{feed.nickName}</span>
                 </div>
               </Link>
-              <div>{feed.title}</div>
+              <div className="font-bold text-lg">{feed.title}</div>
               <Link to={`/article/${feedId}`}>
                 {contentToText(feed.content)}
                 <span className="text-gray-500 font-bold"> ...더보기</span>
               </Link>
+              <div>
+                <div className="flex gap-2 relative">
+                  <span className="flex gap-2">좋아요</span>
+                  <span>{countLike}</span>
+                </div>
+              </div>
+              <div>{isLike ? <FcLike onClick={() => {}} /> : <FaRegHeart onClick={() => {}} />}</div>
             </ArticleWrap>
           );
         })}

@@ -61,6 +61,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const queryClient = useQueryClient();
   const { userUid, userData } = useUserUid();
 
+  /** 부모 댓글 작성 textarea 추적 */
   const onChangeCreateParentCommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCreateParentCommentInput(e.target.value);
   };
@@ -128,7 +129,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
               [parentId]: {
                 ...prevState[parentId],
                 children: {
-                  ...prevState[parentId].children,
+                  ...prevState[parentId]?.children,
                   [child.id]: { ...child.data(), mode: 'view' },
                 } as IChildrenState,
               } as IParentComment,
@@ -353,7 +354,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
           {Object.entries(parentsState).map(([id, parentComment]) => {
             const parentId = id;
             const parent = parentComment as IParentComment;
-            const isLike = parent.like.includes(userUid);
+            const isLike = parent.like.includes(userUid as string);
             const isCommentWriter = parent.uid === userUid;
             const isView = parent.mode === 'view';
             const isEdit = parent.mode === 'edit';
@@ -402,8 +403,8 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                   {children &&
                     Object.entries(children).map(([childId, childComment]) => {
                       const child = childComment;
-                      const isLike = child.like.includes(userUid);
-                      const isCommentWriter = child.uid === userUid;
+                      const isLikeChild = child.like.includes(userUid as string);
+                      const isChildCommentWriter = child.uid === userUid;
                       const isViewChild = child.mode === 'view';
                       const isEditChild = child.mode === 'edit';
                       return (
@@ -417,7 +418,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                               <>
                                 <span>{child.comment}</span>
                                 <div className="flex gap-3">
-                                  {isLike ? (
+                                  {isLikeChild ? (
                                     <FcLike
                                       onClick={() =>
                                         likeComment({ parentId: parentId, childId: childId, type: 'removeLike' })
@@ -430,7 +431,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                                       }
                                     />
                                   )}
-                                  {isCommentWriter && (
+                                  {isChildCommentWriter && (
                                     <>
                                       <span onClick={() => onChangeChildCommentMode(parentId, childId, 'edit')}>
                                         수정
@@ -462,6 +463,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       );
                     })}
                   <span onClick={() => onChangeChildCreateMode(parentId)}>{`=> 대댓글 추가하기`}</span>
+                  {/* 대댓글 추가하기 활성화 될 때 */}
                   {isCreateChildMode && (
                     <div className="flex items-center">
                       <Textarea
