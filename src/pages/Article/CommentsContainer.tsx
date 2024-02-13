@@ -4,7 +4,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { addDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
+import {
+  addDoc,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+} from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { FaRegHeart } from 'react-icons/fa';
 import { FcLike } from 'react-icons/fc';
@@ -91,6 +101,19 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
+  const onLikeParentComment = async ({ commentId, type }) => {
+    const command = type === 'addLike' ? arrayUnion : arrayRemove;
+
+    const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
+    await updateDoc(commentRef, { like: command(userUid) });
+  };
+  const { mutate: likeParentComment } = useMutation({
+    mutationFn: onLikeParentComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+    },
+  });
+
   return (
     <>
       <div className="flex flex-col">
@@ -115,7 +138,11 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                     <>
                       <span>{parent.comment}</span>
                       <div className="flex gap-3">
-                        {isLike ? <FcLike /> : <FaRegHeart />}
+                        {isLike ? (
+                          <FcLike onClick={() => likeParentComment({ commentId: parentId, type: 'removeLike' })} />
+                        ) : (
+                          <FaRegHeart onClick={() => likeParentComment({ commentId: parentId, type: 'addLike' })} />
+                        )}
                         {isCommentWriter && (
                           <>
                             <span>수정</span>
