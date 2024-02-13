@@ -5,7 +5,6 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  DocumentData,
   QueryDocumentSnapshot,
   addDoc,
   arrayRemove,
@@ -40,18 +39,18 @@ interface ICommentFromDB extends QueryDocumentSnapshot {
 interface IChildComment extends ICommentFromDB {
   mode: string;
 }
-interface IParentComment extends IChildComment {
+interface IParentComment extends ICommentFromDB {
   children: IChildComment[];
   mode: string;
 }
 
-interface IParentState {
+interface IParentsState {
   [id: string]: IParentComment;
 }
 
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const [createParentCommentInput, setCreateParentCommentInput] = useState<string>('');
-  const [parentsState, setParentsState] = useState<IParentState>({});
+  const [parentsState, setParentsState] = useState<IParentsState>({});
 
   const queryClient = useQueryClient();
   const { userUid, userData } = useUserUid();
@@ -156,15 +155,15 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   });
 
   /** 댓글 수정 모드 */
-  const onChangeParentCommentMode = (commentId, type) => {
+  const onChangeParentCommentMode = (commentId: string, type: string) => {
     setParentsState((prevState) => {
-      return { ...prevState, [commentId]: { ...prevState[commentId], mode: type } };
+      return { ...prevState, [commentId]: { ...prevState[commentId], mode: type } as IParentComment };
     });
   };
   /** 댓글 수정 textArea 텍스트 입력 */
-  const onChangeParentCommentEditText = (commentId, e) => {
+  const onChangeParentCommentEditText = (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setParentsState((prevState) => {
-      return { ...prevState, [commentId]: { ...prevState[commentId], comment: e.target.value } };
+      return { ...prevState, [commentId]: { ...prevState[commentId], comment: e.target.value } as IParentComment };
     });
   };
   /** 수정된 텍스트 업데이트 */
