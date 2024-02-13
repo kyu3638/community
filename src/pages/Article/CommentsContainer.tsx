@@ -9,6 +9,7 @@ import {
   arrayRemove,
   arrayUnion,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   orderBy,
@@ -114,6 +115,17 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
+  const onRemoveParentComment = async ({ commentId }) => {
+    const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
+    await deleteDoc(commentRef);
+  };
+  const { mutate: removeParentComment } = useMutation({
+    mutationFn: onRemoveParentComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+    },
+  });
+
   return (
     <>
       <div className="flex flex-col">
@@ -146,7 +158,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         {isCommentWriter && (
                           <>
                             <span>수정</span>
-                            <span>삭제</span>
+                            <span onClick={() => removeParentComment({ commentId: parentId })}>삭제</span>
                           </>
                         )}
                       </div>
