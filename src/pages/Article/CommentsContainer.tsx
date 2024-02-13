@@ -3,14 +3,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { db } from '@/firebase/firebase';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ICommentsProps {
   articleId: string;
 }
 
 const CommentsContainer = ({ articleId }: ICommentsProps) => {
+  const [createParentCommentInput, setCreateParentCommentInput] = useState<string>('');
   const [parentIds, setParentIds] = useState<string[]>([]);
+
+  const onChangeCreateParentCommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCreateParentCommentInput(e.target.value);
+  };
+
   const fetchParentComments = async () => {
     const parentCommentsRef = collection(db, `feeds/${articleId}/parentComments`);
     const q = query(parentCommentsRef, orderBy('createdAt', 'asc'));
@@ -47,11 +53,12 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   });
   console.log(children);
 
+
   return (
     <>
       <div className="flex flex-col">
         <div className="flex items-center">
-          <Textarea />
+          <Textarea value={createParentCommentInput} onChange={onChangeCreateParentCommentInput} />
           <Button>작성</Button>
         </div>
         <div className="flex flex-col">
