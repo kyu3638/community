@@ -101,14 +101,14 @@ const Comments = ({
         const isLike = comment.like.includes(userUid as string);
         return (
           <div key={commentId}>
-            <div className="flex items-center py-3 mb-5">
+            {/* <div className="flex items-center py-3 mb-5">
               <AvatarInCard avatarImageSrc={comment.profileImage} />
               <div>{comment.nickName}</div>
-            </div>
+            </div> */}
             <div className="flex justify-between">
               {commentsState[commentId]?.editMode === 'view' && (
                 <>
-                  <div>{comment.comment}</div>
+                  {/* <div>{comment.comment}</div> */}
                   <div className="flex items-center">
                     <div className="flex gap-3">
                       {isLike ? (
@@ -118,12 +118,12 @@ const Comments = ({
                       )}
                       <span>{comment.like.length}</span>
                     </div>
-                    {userUid === comment.uid && (
+                    {/* {userUid === comment.uid && (
                       <>
                         <Button onClick={() => editCommentModeHandler(commentId, 'edit')}>수정</Button>
                         <Button onClick={() => removeComment({ commentId })}>삭제</Button>
                       </>
-                    )}
+                    )} */}
                   </div>
                 </>
               )}

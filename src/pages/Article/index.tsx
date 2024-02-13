@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import Comments from './CommentsContainer';
+import CommentsContainer from './CommentsContainer';
 // import Comments from './CommentsContainer';
 
 interface ILikeFuncArg {
@@ -22,8 +22,7 @@ const Article = () => {
   const articleId = params.articleId;
   const [myArticle, setMyArticle] = useState(false);
 
-  const { userUid, userData } = useUserUid();
-  console.log(userData);
+  const { userUid } = useUserUid();
 
   const queryClient = useQueryClient();
 
@@ -91,7 +90,6 @@ const Article = () => {
     mutationFn: onRemoveArticle,
     // 삭제 성공 시 newsFeed로 이동
     onSuccess: () => {
-      console.log(`sssssss`);
       queryClient.invalidateQueries({ queryKey: ['article'] });
       navigate('/newsfeed');
     },
@@ -122,7 +120,7 @@ const Article = () => {
             <Button onClick={() => removeArticle()}>삭제</Button>
           </div>
         )}
-        <Comments articleId={articleId!} />
+        <CommentsContainer articleId={articleId!} />
       </ContentWrap>
     </PageWrap>
   );
