@@ -126,6 +126,27 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
     },
   });
 
+  const onChangeParentCommentMode = (commentId, type) => {
+    setParentsState((prevState) => {
+      return { ...prevState, [commentId]: { ...prevState[commentId], mode: type } };
+    });
+  };
+  const onChangeParentCommentEditText = (commentId, e) => {
+    setParentsState((prevState) => {
+      return { ...prevState, [commentId]: { ...prevState[commentId], comment: e.target.value } };
+    });
+  };
+  const onEditParentComment = async ({ commentId, editText }) => {
+    const commentRef = doc(db, `feeds/${articleId}/parentComments`, commentId);
+    await updateDoc(commentRef, { comment: parentsState[commentId].comment });
+  };
+  const { mutate: editParentComment } = useMutation({
+    mutationFn: onEditParentComment,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['parentComments'] });
+    },
+  });
+
   return (
     <>
       <div className="flex flex-col">
@@ -157,10 +178,22 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         )}
                         {isCommentWriter && (
                           <>
-                            <span>수정</span>
+                            <span onClick={() => onChangeParentCommentMode(parentId, 'edit')}>수정</span>
                             <span onClick={() => removeParentComment({ commentId: parentId })}>삭제</span>
                           </>
                         )}
+                      </div>
+                    </>
+                  )}
+                  {parent.mode === 'edit' && (
+                    <>
+                      <Textarea
+                        value={parentsState[parentId].comment}
+                        onChange={(e) => onChangeParentCommentEditText(parentId, e)}
+                      />
+                      <div className="flex">
+                        <span>저장</span>
+                        <span onClick={() => onChangeParentCommentMode(parentId, 'view')}>취소</span>
                       </div>
                     </>
                   )}
