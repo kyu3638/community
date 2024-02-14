@@ -7,13 +7,14 @@ import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
 import { arrayRemove, arrayUnion, deleteDoc, doc, getDoc, updateDoc } from '@firebase/firestore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import CommentsContainer from './CommentsContainer';
 // import Comments from './CommentsContainer';
 
 interface ILikeFuncArg {
+  articleId: string;
   type: string;
 }
 
@@ -31,14 +32,18 @@ const Article = () => {
   const fetchArticle = async (): Promise<IFeed> => {
     const articleRef = doc(db, 'feeds', articleId as string);
     const article = (await getDoc(articleRef)).data() as IFeed;
-    if (userUid === article.uid) {
-      setMyArticle(true);
-    }
     return article;
   };
   const { data: article } = useQuery({ queryKey: ['article'], queryFn: fetchArticle });
+  console.log(`Article 컴포넌트에서의 article 정보`, article);
 
-  const articleLikeHandler = async ({ type }: ILikeFuncArg) => {
+  useEffect(() => {
+    if (userUid === article?.uid) {
+      setMyArticle(true);
+    }
+  }, [article]);
+
+  const articleLikeHandler = async ({ articleId, type }: ILikeFuncArg) => {
     try {
       const command = type === 'addLike' ? arrayUnion : arrayRemove;
 
@@ -54,8 +59,8 @@ const Article = () => {
   const { mutate: onLikeArticle } = useMutation({
     mutationFn: articleLikeHandler,
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['article'] });
-      const previousArticleState = queryClient.getQueryData(['article']);
+      await queryClient.cancelQueries({ queryKey: ['article', articleId] });
+      const previousArticleState = queryClient.getQueryData(['article', articleId]);
       queryClient.setQueryData(['article'], (oldState: IFeed) => {
         let newLike = [];
         if (oldState.like.includes(userUid as string)) {
@@ -107,9 +112,9 @@ const Article = () => {
         <div className="flex gap-10">
           <div>{article?.like.length}</div>
           {article?.like.includes(userUid as string) ? (
-            <div onClick={() => onLikeArticle({ type: 'removeLike' })}>안좋아요^^</div>
+            <div onClick={() => onLikeArticle({ articleId: articleId!, type: 'removeLike' })}>안좋아요^^</div>
           ) : (
-            <div onClick={() => onLikeArticle({ type: 'addLike' })}>좋아요</div>
+            <div onClick={() => onLikeArticle({ articleId: articleId!, type: 'addLike' })}>좋아요</div>
           )}
         </div>
         {myArticle && (

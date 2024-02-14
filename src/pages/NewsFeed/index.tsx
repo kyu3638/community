@@ -9,10 +9,11 @@ import { Link } from 'react-router-dom';
 import { FaRegHeart } from 'react-icons/fa';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { FcLike } from 'react-icons/fc';
+import { useArticleLike } from '@/hooks/useArticleLike';
 
 const Newsfeed = () => {
-  const { userUid, userData } = useUserUid();
-  console.log(userData);
+  const { userUid } = useUserUid();
+
   const fetchNewsfeed = async () => {
     try {
       const collectionRef = collection(db, 'feeds');
@@ -36,6 +37,8 @@ const Newsfeed = () => {
     return div.textContent?.substring(0, 100);
   };
 
+  const { mutate: likeArticle } = useArticleLike(userUid as string);
+
   return (
     <PageWrap>
       <ContentWrap>
@@ -43,7 +46,6 @@ const Newsfeed = () => {
           const feed = query.data();
           const feedId = query.id;
           const isLike = feed.like.includes(userUid);
-          console.log(isLike);
           const countLike = feed.like.length;
 
           return (
@@ -59,13 +61,17 @@ const Newsfeed = () => {
                 {contentToText(feed.content)}
                 <span className="text-gray-500 font-bold"> ...더보기</span>
               </Link>
-              <div>
-                <div className="flex gap-2 relative">
-                  <span className="flex gap-2">좋아요</span>
-                  <span>{countLike}</span>
-                </div>
+              <div className="flex gap-2 relative">
+                <span className="flex gap-2">좋아요</span>
+                <span>{countLike}</span>
               </div>
-              <div>{isLike ? <FcLike onClick={() => {}} /> : <FaRegHeart onClick={() => {}} />}</div>
+              <div>
+                {isLike ? (
+                  <FcLike onClick={() => likeArticle({ articleId: feedId, type: 'removeLike' })} />
+                ) : (
+                  <FaRegHeart onClick={() => likeArticle({ articleId: feedId, type: 'addLike' })} />
+                )}
+              </div>
             </ArticleWrap>
           );
         })}
