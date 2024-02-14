@@ -6,7 +6,7 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
 import { deleteDoc, doc, getDoc } from '@firebase/firestore';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -20,8 +20,6 @@ const Article = () => {
   const [myArticle, setMyArticle] = useState(false);
 
   const { userUid } = useUserUid();
-
-  const queryClient = useQueryClient();
 
   const navigate = useNavigate();
 
@@ -39,46 +37,7 @@ const Article = () => {
     }
   }, [article]);
 
-  const { mutate: likeArticle } = useArticleLike(userUid as string);
-
-  // const articleLikeHandler = async ({ articleId, type }: ILikeFuncArg) => {
-  //   try {
-  //     const command = type === 'addLike' ? arrayUnion : arrayRemove;
-
-  //     const myDocRef = doc(db, 'users', userUid as string);
-  //     await updateDoc(myDocRef, { like: command(articleId) });
-
-  //     const articleRef = doc(db, 'feeds', articleId as string);
-  //     await updateDoc(articleRef, { like: command(userUid) });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  // const { mutate: onLikeArticle } = useMutation({
-  //   mutationFn: articleLikeHandler,
-  //   onMutate: async () => {
-  //     await queryClient.cancelQueries({ queryKey: ['article', articleId] });
-  //     const previousArticleState = queryClient.getQueryData(['article', articleId]);
-  //     queryClient.setQueryData(['article'], (oldState: IFeed) => {
-  //       let newLike = [];
-  //       if (oldState.like.includes(userUid as string)) {
-  //         newLike = oldState.like.filter((uid) => uid !== userUid);
-  //       } else {
-  //         oldState.like.push(userUid as string);
-  //         newLike = oldState.like;
-  //       }
-  //       return { ...oldState, like: newLike };
-  //     });
-  //     return { previousArticleState };
-  //   },
-  //   onError: (error, _product, context) => {
-  //     console.log(error);
-  //     queryClient.setQueryData(['article'], context?.previousArticleState);
-  //   },
-  //   onSettled: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['article'] });
-  //   },
-  // });
+  const { mutate: likeArticle } = useArticleLike();
 
   const onRemoveArticle = async () => {
     try {
@@ -93,7 +52,6 @@ const Article = () => {
     mutationFn: onRemoveArticle,
     // 삭제 성공 시 newsFeed로 이동
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['article'] });
       navigate('/newsfeed');
     },
   });

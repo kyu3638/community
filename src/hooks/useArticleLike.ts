@@ -1,3 +1,4 @@
+import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,19 +9,18 @@ interface ILikeFuncArg {
   type: string;
 }
 
-export const useArticleLike = (userUid: string) => {
+export const useArticleLike = () => {
+  const { userUid } = useUserUid();
   const queryClient = useQueryClient();
 
   const articleLikeHandler = async ({ articleId, type }: ILikeFuncArg) => {
-    console.log(`여기까지 도달했는가`);
     const command = type === 'addLike' ? arrayUnion : arrayRemove;
 
-    const myDocRef = doc(db, 'users', userUid);
+    const myDocRef = doc(db, 'users', userUid!);
     await updateDoc(myDocRef, { like: command(articleId) });
 
     const articleRef = doc(db, 'feeds', articleId);
     await updateDoc(articleRef, { like: command(userUid) });
-    console.log(queryClient.getQueryData(['newsfeed']));
   };
 
   return useMutation({
@@ -30,31 +30,28 @@ export const useArticleLike = (userUid: string) => {
       await queryClient.cancelQueries({ queryKey: ['article', articleId] });
       const previousNewsfeedState = queryClient.getQueryData(['newsfeed']);
       const previousArticleState = queryClient.getQueryData(['article', articleId]);
-      console.log('newsfeed', previousNewsfeedState);
-      console.log('article', previousArticleState);
 
       // newfeed 쿼리 키에 대한 optimistic update
-      if (previousNewsfeedState) {
-        queryClient.setQueryData(['newsfeed'], (oldState: [string, IFeed][]) => {
-          const newState = oldState.map(([id, article]) => {
-            if (id === articleId) {
-              let newLike = [];
-              if (article.like.includes(userUid)) {
-                newLike = article.like.filter((uid: string) => uid !== userUid);
-              } else {
-                newLike = [...article.like, userUid];
-              }
-              return [id, { ...article, like: newLike }];
+      queryClient.setQueryData(['newsfeed'], (oldState: [string, IFeed][]) => {
+        const newState = oldState.map(([id, article]) => {
+          if (id === articleId) {
+            let newLike = [];
+            if (article.like.includes(userUid!)) {
+              newLike = article.like.filter((uid: string) => uid !== userUid);
             } else {
-              return [id, article];
+              newLike = [...article.like, userUid];
             }
-          });
-          return newState;
+            return [id, { ...article, like: newLike }];
+          } else {
+            return [id, article];
+          }
         });
-      }
+        return newState;
+      });
 
-      // article 쿼리 키에 대한 optimistic update
+      // ['article', articleId] 쿼리 값이 캐시되어 있지않은 경우를 제외(게시글 목록)
       if (previousArticleState) {
+        // article 쿼리 키에 대한 optimistic update
         queryClient.setQueryData(['article', articleId], (oldState: IFeed) => {
           let newLike = [];
           if (oldState.like.includes(userUid as string)) {
@@ -69,14 +66,16 @@ export const useArticleLike = (userUid: string) => {
 
       return { previousNewsfeedState, previousArticleState };
     },
-    onError: (error, _product, context) => {
+    onError: (error, product, context) => {
       console.log(error);
-      queryClient.setQueryData(['article'], context?.previousArticleState);
+      const articleId = product.articleId;
+      queryClient.setQueryData(['newsfeed'], context?.previousNewsfeedState);
+      queryClient.setQueryData(['article', articleId], context?.previousArticleState);
     },
-    onSettled: (_data, _error, variables) => {
+    onSettled: async (_data, _error, variables) => {
       const articleId = variables.articleId;
-      queryClient.invalidateQueries({ queryKey: ['newsfeed'] });
-      queryClient.invalidateQueries({ queryKey: ['article', articleId] });
+      await queryClient.invalidateQueries({ queryKey: ['newsfeed'] });
+      await queryClient.invalidateQueries({ queryKey: ['article', articleId] });
     },
   });
 };
