@@ -34,17 +34,18 @@ export const useArticleLike = () => {
       // newfeed 쿼리 키에 대한 optimistic update
       queryClient.setQueryData(['newsfeed'], (oldState: [string, IFeed][]) => {
         const newState = oldState.map(([id, article]) => {
-          if (id === articleId) {
+          const isTarget = id === articleId;
+          if (isTarget) {
+            const isLike = article.like.includes(userUid!);
             let newLike = [];
-            if (article.like.includes(userUid!)) {
+            if (isLike) {
               newLike = article.like.filter((uid: string) => uid !== userUid);
             } else {
               newLike = [...article.like, userUid];
             }
             return [id, { ...article, like: newLike }];
-          } else {
-            return [id, article];
           }
+          return [id, article];
         });
         return newState;
       });
