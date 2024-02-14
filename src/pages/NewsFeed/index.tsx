@@ -10,6 +10,7 @@ import { FaRegHeart } from 'react-icons/fa';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { FcLike } from 'react-icons/fc';
 import { useArticleLike } from '@/hooks/useArticleLike';
+import { IFeed } from '@/types/common';
 
 const Newsfeed = () => {
   const { userUid } = useUserUid();
@@ -18,7 +19,7 @@ const Newsfeed = () => {
     try {
       const collectionRef = collection(db, 'feeds');
       const q = query(collectionRef, orderBy('updatedAt', 'desc'));
-      const querySnapshot = (await getDocs(q)).docs;
+      const querySnapshot = (await getDocs(q)).docs.map((doc) => [doc.id, doc.data()]);
       return querySnapshot;
       // const feeds = querySnapshot.map((feed) => feed.data()) as IFeed[];
       // return feeds;
@@ -42,10 +43,10 @@ const Newsfeed = () => {
   return (
     <PageWrap>
       <ContentWrap>
-        {newsfeed?.map((query, index) => {
-          const feed = query.data();
-          const feedId = query.id;
-          const isLike = feed.like.includes(userUid);
+        {newsfeed?.map((feedIdData, index) => {
+          const feedId = feedIdData[0];
+          const feed = feedIdData[1] as IFeed;
+          const isLike = feed.like.includes(userUid!);
           const countLike = feed.like.length;
 
           return (
@@ -67,9 +68,9 @@ const Newsfeed = () => {
               </div>
               <div>
                 {isLike ? (
-                  <FcLike onClick={() => likeArticle({ articleId: feedId, type: 'removeLike' })} />
+                  <FcLike onClick={() => likeArticle({ articleId: feedId as string, type: 'removeLike' })} />
                 ) : (
-                  <FaRegHeart onClick={() => likeArticle({ articleId: feedId, type: 'addLike' })} />
+                  <FaRegHeart onClick={() => likeArticle({ articleId: feedId as string, type: 'addLike' })} />
                 )}
               </div>
             </ArticleWrap>

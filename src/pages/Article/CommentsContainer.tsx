@@ -150,7 +150,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       comment: createParentCommentInput,
       like: [],
       createdAt: new Date(),
-      inRemoved: false,
+      isRemoved: false,
     };
     const ref = collection(db, `feeds/${articleId}/parentComments`);
     await addDoc(ref, newParentComment);
@@ -354,12 +354,13 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
           {Object.entries(parentsState).map(([id, parentComment]) => {
             const parentId = id;
             const parent = parentComment as IParentComment;
-            const isLike = parent.like.includes(userUid as string);
-            const isCommentWriter = parent.uid === userUid;
-            const isView = parent.mode === 'view';
-            const isEdit = parent.mode === 'edit';
-            const isCreateChildMode = parent.newChildCreateMode;
-            const children = parent.children;
+            console.log(parent);
+            const isLike = parent?.like.includes(userUid as string);
+            const isCommentWriter = parent?.uid === userUid;
+            const isView = parent?.mode === 'view';
+            const isEdit = parent?.mode === 'edit';
+            const isCreateChildMode = parent?.newChildCreateMode;
+            const children = parent?.children;
             return (
               <div key={parentId} className="border">
                 <div className="flex items-center gap-5">
