@@ -5,77 +5,39 @@ import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
-import { arrayRemove, arrayUnion, deleteDoc, doc, getDoc, updateDoc } from '@firebase/firestore';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { deleteDoc, doc, getDoc } from '@firebase/firestore';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import CommentsContainer from './CommentsContainer';
+import { useArticleLike } from '@/hooks/useArticleLike';
 // import Comments from './CommentsContainer';
-
-interface ILikeFuncArg {
-  type: string;
-}
 
 const Article = () => {
   const params = useParams();
-  const articleId = params.articleId;
+  const articleId = params.articleId!;
   const [myArticle, setMyArticle] = useState(false);
 
   const { userUid } = useUserUid();
 
-  const queryClient = useQueryClient();
-
   const navigate = useNavigate();
 
-  const fetchArticle = async (): Promise<IFeed> => {
+  const fetchArticle = async ({ queryKey }: { queryKey: string[] }): Promise<IFeed> => {
+    const articleId = queryKey[1];
     const articleRef = doc(db, 'feeds', articleId as string);
     const article = (await getDoc(articleRef)).data() as IFeed;
-    if (userUid === article.uid) {
-      setMyArticle(true);
-    }
     return article;
   };
-  const { data: article } = useQuery({ queryKey: ['article'], queryFn: fetchArticle });
+  const { data: article } = useQuery({ queryKey: ['article', articleId], queryFn: fetchArticle });
 
-  const articleLikeHandler = async ({ type }: ILikeFuncArg) => {
-    try {
-      const command = type === 'addLike' ? arrayUnion : arrayRemove;
-
-      const myDocRef = doc(db, 'users', userUid as string);
-      await updateDoc(myDocRef, { like: command(articleId) });
-
-      const articleRef = doc(db, 'feeds', articleId as string);
-      await updateDoc(articleRef, { like: command(userUid) });
-    } catch (error) {
-      console.log(error);
+  useEffect(() => {
+    if (userUid === article?.uid) {
+      setMyArticle(true);
     }
-  };
-  const { mutate: onLikeArticle } = useMutation({
-    mutationFn: articleLikeHandler,
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['article'] });
-      const previousArticleState = queryClient.getQueryData(['article']);
-      queryClient.setQueryData(['article'], (oldState: IFeed) => {
-        let newLike = [];
-        if (oldState.like.includes(userUid as string)) {
-          newLike = oldState.like.filter((uid) => uid !== userUid);
-        } else {
-          oldState.like.push(userUid as string);
-          newLike = oldState.like;
-        }
-        return { ...oldState, like: newLike };
-      });
-      return { previousArticleState };
-    },
-    onError: (error, _product, context) => {
-      console.log(error);
-      queryClient.setQueryData(['article'], context?.previousArticleState);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['article'] });
-    },
-  });
+  }, [article]);
+
+  const { mutate: likeArticle } = useArticleLike();
 
   const onRemoveArticle = async () => {
     try {
@@ -90,7 +52,6 @@ const Article = () => {
     mutationFn: onRemoveArticle,
     // 삭제 성공 시 newsFeed로 이동
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['article'] });
       navigate('/newsfeed');
     },
   });
@@ -107,9 +68,9 @@ const Article = () => {
         <div className="flex gap-10">
           <div>{article?.like.length}</div>
           {article?.like.includes(userUid as string) ? (
-            <div onClick={() => onLikeArticle({ type: 'removeLike' })}>안좋아요^^</div>
+            <div onClick={() => likeArticle({ articleId: articleId, type: 'removeLike' })}>안좋아요^^</div>
           ) : (
-            <div onClick={() => onLikeArticle({ type: 'addLike' })}>좋아요</div>
+            <div onClick={() => likeArticle({ articleId: articleId, type: 'addLike' })}>좋아요</div>
           )}
         </div>
         {myArticle && (
