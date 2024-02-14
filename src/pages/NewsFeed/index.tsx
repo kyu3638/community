@@ -14,6 +14,7 @@ import { IFeed } from '@/types/common';
 
 const Newsfeed = () => {
   const { userUid } = useUserUid();
+  const { mutate: likeArticle } = useArticleLike();
 
   const fetchNewsfeed = async () => {
     try {
@@ -21,8 +22,6 @@ const Newsfeed = () => {
       const q = query(collectionRef, orderBy('updatedAt', 'desc'));
       const querySnapshot = (await getDocs(q)).docs.map((doc) => [doc.id, doc.data()]);
       return querySnapshot;
-      // const feeds = querySnapshot.map((feed) => feed.data()) as IFeed[];
-      // return feeds;
     } catch (error) {
       console.log(error);
     }
@@ -37,8 +36,6 @@ const Newsfeed = () => {
     div.innerHTML = content;
     return div.textContent?.substring(0, 100);
   };
-
-  const { mutate: likeArticle } = useArticleLike(userUid as string);
 
   return (
     <PageWrap>
@@ -62,7 +59,7 @@ const Newsfeed = () => {
                 {contentToText(feed.content)}
                 <span className="text-gray-500 font-bold"> ...더보기</span>
               </Link>
-              <div className="flex gap-2 relative">
+              <div className="flex gap-2 relative text-sm text-gray-700">
                 <span className="flex gap-2">좋아요</span>
                 <span>{countLike}</span>
               </div>
