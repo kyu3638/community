@@ -19,7 +19,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { FaRegHeart } from 'react-icons/fa';
 import { FcLike } from 'react-icons/fc';
-import unknownImage from '../../../public/unknown.png';
+import unknownImage from '/unknown.png';
 
 interface ICommentsProps {
   articleId: string;

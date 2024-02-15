@@ -4,12 +4,36 @@ import PageWrap from '@/components/Wrap/PageWrap';
 import UserCardWrap from '@/components/Wrap/UserCardWrap';
 import { db } from '@/firebase/firebase';
 import { IUser } from '@/types/common';
-import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
+import {
+  DocumentData,
+  DocumentSnapshot,
+  QuerySnapshot,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
+  updateDoc,
+} from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { useUserUid } from '@/contexts/LoginUserState';
-import { QueryFunctionContext, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryFunctionContext,
+  QueryKey,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useInView } from 'react-intersection-observer';
+import { Button } from '@/components/ui/button';
 
 interface IFollowingObj {
   [userUid: string]: boolean;
@@ -101,7 +125,6 @@ const SearchUser = () => {
           followingObj[uid] = false;
         }
       });
-      console.log(followingObj);
       return followingObj;
     } catch (error) {
       console.log(error);
@@ -163,9 +186,51 @@ const SearchUser = () => {
     },
   });
 
+  const { ref, inView } = useInView();
+  const fetchUserss = async (props) => {
+    console.log(`fetchUserss가 받는 props`, props);
+    console.log(`fetchUserss가 받는 props.pageParam`, props.pageParam);
+
+    const usersRef = collection(db, 'users');
+    let q;
+    if (!props.pageParam) {
+      q = query(usersRef, orderBy('createdAt', 'asc'), limit(3));
+    } else {
+      q = query(usersRef, orderBy('createdAt', 'asc'), startAfter(props.pageParam), limit(3));
+    }
+    const querySnapshot: QuerySnapshot = await getDocs(q);
+    const usersDocs: DocumentData[] = querySnapshot.docs;
+
+    return usersDocs;
+  };
+  const {
+    data: userss,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['userss'],
+    queryFn: fetchUserss,
+    initialPageParam: null,
+    getNextPageParam: (lastPage, allpages, lastPageparam, allpagesParam) => {
+      console.log(`getNextPageParam의 인자 lastPage`, lastPage);
+      console.log(`getNextPageParam의 인자 allpages`, allpages);
+      console.log(`getNextPageParam의 인자 lastPageparam`, lastPageparam);
+      console.log(`getNextPageParam의 인자 allpagesParam`, allpagesParam);
+      const lastDoc = lastPage[lastPage.length - 1]; // 마지막 페이지의 마지막 doc 이후의 자료들만 가져올 수 있도록 pageParam을 넘겨줌
+      return lastDoc;
+    },
+  });
+
   useEffect(() => {
-    console.log(`presentFollowing`, following);
-  }, [usersToShow, following]);
+    console.log(`✅useInfiniteQuery의 반환 data:userss`, userss);
+  }, [userss]);
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
   return (
     <PageWrap>
@@ -174,7 +239,24 @@ const SearchUser = () => {
           <Input type="text" placeholder="검색할 유저 ID" value={searchNickName} onChange={onChangeSearchNickName} />
         </div>
         <div>
-          {usersToShow &&
+          {userss &&
+            userss.pages.map((page) =>
+              page.map((doc, index) => {
+                const userid = doc.id;
+                const userInfo = doc.data();
+                return (
+                  <div className="mb-[500px]" key={index}>
+                    <span>{userid}</span>
+                    {userInfo.nickName}
+                  </div>
+                );
+              })
+            )}
+          <div ref={ref}>
+            {isFetchingNextPage && <div>Loading...</div>}
+            <Button onClick={() => fetchNextPage()}>더 불러오기</Button>
+          </div>
+          {/* usersToShow &&
             usersToShow.map((user, idx) => {
               return (
                 <UserCardWrap key={`search-user-${idx}`}>
@@ -198,7 +280,7 @@ const SearchUser = () => {
                   </div>
                 </UserCardWrap>
               );
-            })}
+            }) */}
         </div>
       </ContentWrap>
     </PageWrap>
