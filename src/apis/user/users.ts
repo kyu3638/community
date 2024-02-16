@@ -57,7 +57,7 @@ export const followHandler = async ({ userUid, targetUid, type }) => {
   }
 };
 
-export const fetchFollowing = async (uid) => {
+export const fetchFollowing = async (uid: string) => {
   try {
     const userDocRef = doc(db, 'users', uid);
     const docSnapshot = await getDoc(userDocRef);
