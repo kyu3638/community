@@ -52,8 +52,12 @@ export const useFollow = () => {
       queryClient.setQueryData(['users', searchKeyword], context?.previousData);
     },
     onSettled: (__data, __error, variables) => {
+      console.log(variables);
       queryClient.invalidateQueries({ queryKey: ['users', searchKeyword] });
       queryClient.invalidateQueries({ queryKey: ['user', variables.userUid] });
+      // 나의 팔로잉,팔로우 정보 뿐만 아니라 target 유저의 정보도 갱신이 필요
+      // (following은 목록에서 사라지기 때문에 무효화 해줄 필요 없지만, follower는 목록에 남기 때문에 ['follower', variables.targetUid] 쿼리키에 대해 무효화 필요)
+      queryClient.invalidateQueries({ queryKey: ['follower', variables.targetUid] });
     },
   });
 

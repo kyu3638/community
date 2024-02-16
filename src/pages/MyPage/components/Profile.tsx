@@ -10,8 +10,10 @@ import { auth, db } from '@/firebase/firebase';
 import { EmailAuthProvider, User, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUserUid } from '@/contexts/LoginUserState';
-import { isValid } from '../SignUpStepOne';
+import { isValid } from '../../SignUpStepOne';
 import FollowDetail from './FollowDetail';
+import ArticlesDetail from './ArticlesDetail';
+import CommentsDetail from './CommentsDetail';
 
 interface IUserProps {
   user: IUser | null;
@@ -86,6 +88,9 @@ const Profile = ({ user }: IUserProps) => {
   const onClickModeHandler = (type: 'follower' | 'following' | 'articles' | 'comments') => {
     setMode(type);
   };
+
+  console.log(`mode`, mode);
+
   return (
     <ContentWrap>
       <div className="flex flex-col gap-10 relative">
@@ -133,7 +138,9 @@ const Profile = ({ user }: IUserProps) => {
         <button onClick={() => onClickModeHandler('articles')}>작성한 글</button>
         <button onClick={() => onClickModeHandler('comments')}>작성한 댓글</button>
       </div>
-      <FollowDetail mode={mode} />
+      {mode === 'follower' || (mode === 'following' && <FollowDetail mode={mode} />)}
+      {mode === 'articles' && <ArticlesDetail />}
+      {mode === 'comments' && <CommentsDetail />}
     </ContentWrap>
   );
 };

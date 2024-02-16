@@ -1,7 +1,7 @@
 import { db } from '@/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import PageWrap from '@/components/Wrap/PageWrap';
-import Profile from '@/pages/MyPage/Profile';
+import Profile from '@/pages/MyPage/components/Profile';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { IUser } from '@/types/common';
