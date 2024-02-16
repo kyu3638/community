@@ -14,33 +14,36 @@ export const useFollow = () => {
       await queryClient.cancelQueries({ queryKey: ['users', searchKeyword] });
       const previousData = queryClient.getQueryData(['users', searchKeyword]);
 
-      queryClient.setQueryData(['users', searchKeyword], (prevUsers) => {
-        const newPages = prevUsers.pages.map((docs) => {
-          const newQuerySnapshot = docs.querySnapshot.map((user) => {
-            if (user.uid === targetUid) {
-              if (user.follower.includes(userUid)) {
-                const removed = user.follower.filter((uid: string) => uid !== userUid);
-                return { ...user, follower: removed };
-              } else {
-                const added = [...user.follower, userUid];
-                return { ...user, follower: added };
+      if (previousData) {
+        queryClient.setQueryData(['users', searchKeyword], (prevUsers) => {
+          const newPages = prevUsers.pages.map((docs) => {
+            const newQuerySnapshot = docs.querySnapshot.map((user) => {
+              if (user.uid === targetUid) {
+                if (user.follower.includes(userUid)) {
+                  const removed = user.follower.filter((uid: string) => uid !== userUid);
+                  return { ...user, follower: removed };
+                } else {
+                  const added = [...user.follower, userUid];
+                  return { ...user, follower: added };
+                }
               }
-            }
-            if (user.uid === userUid) {
-              if (user.following.includes(targetUid)) {
-                const removed = user.following.filter((uid: string) => uid !== targetUid);
-                return { ...user, following: removed };
-              } else {
-                const added = [...user.following, targetUid];
-                return { ...user, following: added };
+              if (user.uid === userUid) {
+                if (user.following.includes(targetUid)) {
+                  const removed = user.following.filter((uid: string) => uid !== targetUid);
+                  return { ...user, following: removed };
+                } else {
+                  const added = [...user.following, targetUid];
+                  return { ...user, following: added };
+                }
               }
-            }
-            return { ...user };
+              return { ...user };
+            });
+            return { ...docs, querySnapshot: newQuerySnapshot };
           });
-          return { ...docs, querySnapshot: newQuerySnapshot };
+          return { pageParams: prevUsers.pageParams, pages: newPages };
         });
-        return { pageParams: prevUsers.pageParams, pages: newPages };
-      });
+      }
+      //
 
       return previousData;
     },
@@ -48,8 +51,9 @@ export const useFollow = () => {
       console.log(error);
       queryClient.setQueryData(['users', searchKeyword], context?.previousData);
     },
-    onSettled: () => {
+    onSettled: (__data, __error, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users', searchKeyword] });
+      queryClient.invalidateQueries({ queryKey: ['user', variables.userUid] });
     },
   });
 

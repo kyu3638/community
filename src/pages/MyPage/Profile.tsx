@@ -11,7 +11,7 @@ import { EmailAuthProvider, User, reauthenticateWithCredential, updatePassword }
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { isValid } from '../SignUpStepOne';
-import DetailInfo from './DetailInfo';
+import FollowDetail from './FollowDetail';
 
 interface IUserProps {
   user: IUser | null;
@@ -133,7 +133,7 @@ const Profile = ({ user }: IUserProps) => {
         <button onClick={() => onClickModeHandler('articles')}>작성한 글</button>
         <button onClick={() => onClickModeHandler('comments')}>작성한 댓글</button>
       </div>
-      <DetailInfo mode={mode} />
+      <FollowDetail mode={mode} />
     </ContentWrap>
   );
 };
