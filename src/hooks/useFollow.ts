@@ -54,7 +54,7 @@ export const useFollow = () => {
       if (previousUserData) {
         queryClient.setQueryData(['user', userUid], (prevUser: IUser) => {
           if (prevUser.following.includes(targetUid)) {
-            const removed = prevUser.follower.filter((uid: string) => uid !== userUid);
+            const removed = prevUser.following.filter((uid: string) => uid !== userUid);
             return { ...prevUser, following: removed };
           } else {
             const added = [...prevUser.following, targetUid];
