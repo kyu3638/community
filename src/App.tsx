@@ -16,6 +16,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Posting from './pages/Posting';
 import Article from './pages/Article';
 import Newsfeed from './pages/NewsFeed';
+import GlobalStyle from './GlobalStyles';
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ function App() {
     <div>
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
+          <GlobalStyle />
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
