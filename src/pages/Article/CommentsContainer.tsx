@@ -1,4 +1,4 @@
-import AvatarInCard from '@/components/Avatar/AvatarInCard';
+import AvatarInComment from '@/components/Avatar/AvatarInComment';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useUserUid } from '@/contexts/LoginUserState';
@@ -364,7 +364,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             return (
               <div key={parentId} className="border">
                 <div className="flex items-center gap-5">
-                  <AvatarInCard avatarImageSrc={parent.profileImage} />
+                  <AvatarInComment avatarImageSrc={parent.profileImage} />
                   {parent.nickName}
                 </div>
                 <div className="flex justify-between">
@@ -411,7 +411,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       return (
                         <div key={childId} className="border border-red-500">
                           <div className="flex items-center gap-5">
-                            <AvatarInCard avatarImageSrc={child.profileImage} />
+                            <AvatarInComment avatarImageSrc={child.profileImage} />
                             {child.nickName}
                           </div>
                           <div className="flex justify-between">

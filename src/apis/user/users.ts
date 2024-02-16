@@ -13,7 +13,6 @@ import {
 } from 'firebase/firestore';
 
 export const fetchUsers = async ({ queryKey, pageParam }) => {
-  console.log(pageParam);
   try {
     const keyword = queryKey[1];
     // 검색 키워드가 있는 경우와 없는 경우 구분
@@ -21,7 +20,6 @@ export const fetchUsers = async ({ queryKey, pageParam }) => {
       const usersRef = collection(db, 'users');
       let q;
       if (pageParam) {
-        console.log(`pageParam`, pageParam);
         q = query(usersRef, orderBy('createdAt'), startAfter(pageParam), limit(5));
       } else {
         q = query(usersRef, orderBy('createdAt'), limit(5));
