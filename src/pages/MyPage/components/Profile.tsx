@@ -13,7 +13,6 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { isValid } from '../../SignUpStepOne';
 import FollowDetail from './FollowDetail';
 import ArticlesDetail from './ArticlesDetail';
-import CommentsDetail from './CommentsDetail';
 
 interface IUserProps {
   user: IUser | null;
@@ -89,15 +88,16 @@ const Profile = ({ user }: IUserProps) => {
     setMode(type);
   };
 
-  console.log(`mode`, mode);
+  // console.log(`mode`, mode);
+  console.log(`user?.following`, user?.following);
 
   return (
     <ContentWrap>
-      <div className="flex flex-col gap-10 relative">
+      <div className="flex flex-col gap-5 relative">
         <Avatar className="w-48 h-48">
           <AvatarInProfile avatarImageSrc={user?.profileImage} />
         </Avatar>
-        <div className="flex-grow">
+        <div className="flex-grow pl-10">
           {isEdit ? (
             <>
               <span>닉네임</span>
@@ -136,11 +136,11 @@ const Profile = ({ user }: IUserProps) => {
           팔로잉 <span>{user?.following.length}</span>
         </button>
         <button onClick={() => onClickModeHandler('articles')}>작성한 글</button>
-        <button onClick={() => onClickModeHandler('comments')}>작성한 댓글</button>
       </div>
-      {mode === 'follower' || (mode === 'following' && <FollowDetail mode={mode} />)}
-      {mode === 'articles' && <ArticlesDetail />}
-      {mode === 'comments' && <CommentsDetail />}
+      <div>
+        {(mode === 'follower' || mode === 'following') && <FollowDetail mode={mode} />}
+        {mode === 'articles' && <ArticlesDetail />}
+      </div>
     </ContentWrap>
   );
 };

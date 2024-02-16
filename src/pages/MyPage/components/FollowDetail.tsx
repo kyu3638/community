@@ -22,7 +22,7 @@ const FollowDetail = ({ mode }: { mode: string }) => {
   });
 
   return (
-    <div className="border border-black">
+    <div>
       {resultFollowing.map((doc, index) => {
         const user = doc.data;
         return <UserCard key={index} user={user} editFollow={editFollow} />;
