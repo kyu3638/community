@@ -10,13 +10,12 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { useInView } from 'react-intersection-observer';
 import { fetchUsers, followHandler } from '@/apis/user/users';
 import { Button } from '@/components/ui/button';
-import { IoSearchSharp } from 'react-icons/io5';
 import { CgSearch } from 'react-icons/cg';
 
 const SearchUser = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
-  const { userUid, userData } = useUserUid();
+  const { userUid } = useUserUid();
   const queryClient = useQueryClient();
   const { ref, inView } = useInView();
 
