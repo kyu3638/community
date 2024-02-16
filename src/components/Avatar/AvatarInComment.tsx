@@ -5,12 +5,12 @@ interface IAvatarImageSrc {
   avatarImageSrc: string | undefined;
 }
 
-const AvatarInCard = ({ avatarImageSrc }: IAvatarImageSrc) => {
+const AvatarInComment = ({ avatarImageSrc }: IAvatarImageSrc) => {
   return (
-    <Avatar className="w-20 h-20">
+    <Avatar className="w-12 h-12">
       <AvatarImage src={avatarImageSrc} />
     </Avatar>
   );
 };
 
-export default AvatarInCard;
+export default AvatarInComment;
