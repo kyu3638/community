@@ -1,5 +1,5 @@
 import { db } from '@/firebase/firebase';
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, orderBy, query, where } from 'firebase/firestore';
 
 export interface IArticle {
   articleId: string;
@@ -26,6 +26,16 @@ export const fetchUsersArticles = async ({ queryKey }: { queryKey: string[] }) =
       return { ...data, articleId: id };
     });
     return articleWithId as IArticle[];
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const onRemoveArticle = async (articleId: string) => {
+  try {
+    const articleRef = doc(db, 'feeds', articleId as string);
+    await deleteDoc(articleRef);
+    console.log(`articleId : ${articleId}에 해당하는 게시글이 삭제 되었습니다.`);
   } catch (error) {
     console.log(error);
   }

@@ -10,7 +10,7 @@ const ArticlesDetail = () => {
     queryKey: ['usersArticles', userUid!],
     queryFn: fetchUsersArticles,
   });
-
+  
   return (
     <>
       {articles?.map((article: IArticle) => {
