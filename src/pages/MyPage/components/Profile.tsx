@@ -13,6 +13,7 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { isValid } from '../../SignUpStepOne';
 import FollowDetail from './FollowDetail';
 import ArticlesDetail from './ArticlesDetail';
+import { useParams } from 'react-router';
 
 interface IUserProps {
   user: IUser | null;
@@ -27,7 +28,10 @@ const Profile = ({ user }: IUserProps) => {
   const [checkPassword, setCheckPassword] = useState('');
   const [mode, setMode] = useState<'follower' | 'following' | 'articles' | 'comments'>('follower');
 
-  const { userUid } = useUserUid();
+  const { userUid: targetUserUid } = useParams();
+
+  const { userUid: loginUserUid } = useUserUid();
+  const isUser = loginUserUid === user?.uid;
 
   const onEditModeHandler = async () => {
     setNickName(user?.nickName as string);
@@ -74,7 +78,7 @@ const Profile = ({ user }: IUserProps) => {
       const newPassword = password;
       await updatePassword(currentUser, newPassword);
       // 닉네임, 소개말 업데이트
-      const myDocRef = doc(db, 'users', userUid as string);
+      const myDocRef = doc(db, 'users', targetUserUid as string);
       await updateDoc(myDocRef, { nickName, introduction });
       // isEdit -> false
       setIsEdit((prev) => !prev);
@@ -100,16 +104,20 @@ const Profile = ({ user }: IUserProps) => {
         <div className="flex-grow pl-10">
           {isEdit ? (
             <>
-              <span>닉네임</span>
-              <Input type="text" value={nickName} onChange={onNickNameChangeHandler} />
-              <span>현재 비밀번호</span>
-              <Input type="password" value={currentPassword} onChange={onCurrentPasswordChangeHandler} />
-              <span>비밀번호</span>
-              <Input type="password" value={password} onChange={onPasswordChangeHandler} />
-              <span>비밀번호 확인</span>
-              <Input type="password" value={checkPassword} onChange={onCheckPasswordChangeHandler} />
-              <span>소개말</span>
-              <Textarea value={introduction} onChange={onIntroductionChangeHandler} />
+              {isUser && (
+                <>
+                  <span>닉네임</span>
+                  <Input type="text" value={nickName} onChange={onNickNameChangeHandler} />
+                  <span>현재 비밀번호</span>
+                  <Input type="password" value={currentPassword} onChange={onCurrentPasswordChangeHandler} />
+                  <span>비밀번호</span>
+                  <Input type="password" value={password} onChange={onPasswordChangeHandler} />
+                  <span>비밀번호 확인</span>
+                  <Input type="password" value={checkPassword} onChange={onCheckPasswordChangeHandler} />
+                  <span>소개말</span>
+                  <Textarea value={introduction} onChange={onIntroductionChangeHandler} />
+                </>
+              )}
             </>
           ) : (
             <>
@@ -118,14 +126,22 @@ const Profile = ({ user }: IUserProps) => {
             </>
           )}
         </div>
-        {isEdit ? (
-          <Button onClick={onEditProfileHandler} className="absolute right-0 top-0">
-            수정 완료
-          </Button>
-        ) : (
-          <Button onClick={onEditModeHandler} className="absolute right-0 top-0">
-            프로필 수정
-          </Button>
+        {isUser && (
+          <>
+            {
+              <>
+                {isEdit ? (
+                  <Button onClick={onEditProfileHandler} className="absolute right-0 top-0">
+                    수정 완료
+                  </Button>
+                ) : (
+                  <Button onClick={onEditModeHandler} className="absolute right-0 top-0">
+                    프로필 수정
+                  </Button>
+                )}
+              </>
+            }
+          </>
         )}
       </div>
       <div className="flex justify-around">

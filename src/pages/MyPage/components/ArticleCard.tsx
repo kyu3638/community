@@ -14,7 +14,6 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
   const articleId = article.articleId;
 
   const location = useLocation();
-  console.log(location);
 
   const fetchParent = async ({ queryKey }: { queryKey: string[] }) => {
     try {
