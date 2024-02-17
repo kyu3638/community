@@ -5,11 +5,16 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import loadingImage from '/loading.gif';
 import { Button } from '@/components/ui/button';
+import { useRemoveArticle } from '@/hooks/useRemoveArticle';
+import { useLocation } from 'react-router';
 
 const ArticleCard = ({ article }: { article: IArticle }) => {
   const [lenOfComments, setLenOfComments] = useState<number>();
 
   const articleId = article.articleId;
+
+  const location = useLocation();
+  console.log(location);
 
   const fetchParent = async ({ queryKey }: { queryKey: string[] }) => {
     try {
@@ -55,6 +60,8 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
     }
   }, [parentIds, combinedChildren]);
 
+  const { mutate: removeArticle } = useRemoveArticle(articleId, location.pathname);
+
   return (
     <div className="relative border-black border-t border-b my-[10px] p-[10px] pl-[20px] flex flex-col gap-3 bg-gray-100">
       <h1 className="font-bold">{article.title}</h1>
@@ -76,7 +83,7 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
       </div>
       <div className="absolute top-5 right-5 flex gap-3">
         <Button>수정</Button>
-        <Button>삭제</Button>
+        <Button onClick={() => removeArticle()}>삭제</Button>
       </div>
     </div>
   );

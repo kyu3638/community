@@ -8,7 +8,7 @@ import { IFeed } from '@/types/common';
 import { doc, getDoc } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import CommentsContainer from './CommentsContainer';
 import { useArticleLike } from '@/hooks/useArticleLike';
@@ -18,6 +18,7 @@ const Article = () => {
   const params = useParams();
   const articleId = params.articleId!;
   const [myArticle, setMyArticle] = useState(false);
+  const location = useLocation();
 
   const { userUid } = useUserUid();
 
@@ -37,7 +38,7 @@ const Article = () => {
 
   const { mutate: likeArticle } = useArticleLike();
 
-  const { mutate: removeArticle } = useRemoveArticle(articleId);
+  const { mutate: removeArticle } = useRemoveArticle(articleId, location.pathname);
 
   return (
     <PageWrap>
