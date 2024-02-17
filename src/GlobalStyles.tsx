@@ -10,6 +10,9 @@ const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html::-webkit-scrollbar {
+  display: none; /* for Chrome, Safari, and Opera */
+}
   button {
     cursor: pointer;
   }
