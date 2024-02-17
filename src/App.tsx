@@ -39,12 +39,12 @@ function App() {
           <GlobalStyle />
           <NavBar />
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* <Route path="/" element={<Home />} /> */}
             <Route path="/login" element={<Login />} />
             <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
             <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
             <Route element={<ProtectedRoute />}>
-              <Route path="/newsfeed" element={<Newsfeed />} />
+              <Route path="/" element={<Newsfeed />} />
               <Route path="/article/:articleId" element={<Article />} />
               <Route path="/posting" element={<Posting />} />
               <Route path="/mypage" element={<MyPage />} />
