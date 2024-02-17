@@ -1,16 +1,17 @@
-import { useUserUid } from '@/contexts/LoginUserState';
 import PageWrap from '@/components/Wrap/PageWrap';
 import Profile from './components/Profile';
 import { useUser } from '@/hooks/useUser';
 import { IUser } from '@/types/common';
+import { useParams } from 'react-router';
 
 const MyPage = () => {
-  const { userUid } = useUserUid();
-  const { data: userData } = useUser(userUid!);
+  const { userUid: targetUserUid } = useParams();
+
+  const { data: targetUserData } = useUser(targetUserUid!);
 
   return (
     <PageWrap>
-      <Profile user={userData as IUser} />
+      <Profile user={targetUserData as IUser} />
     </PageWrap>
   );
 };

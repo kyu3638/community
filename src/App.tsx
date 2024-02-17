@@ -1,6 +1,5 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import SignUpStepOne from '@/pages/SignUpStepOne';
 import SignUpStepTwo from '@/pages/SignUpStepTwo';
@@ -47,9 +46,9 @@ function App() {
               <Route path="/" element={<Newsfeed />} />
               <Route path="/article/:articleId" element={<Article />} />
               <Route path="/posting" element={<Posting />} />
-              <Route path="/mypage" element={<MyPage />} />
+              <Route path="/user/:userUid" element={<MyPage />} />
               <Route path="/search-user" element={<SearchUser />} />
-              <Route path="/search-user/:userUid" element={<UserPage />} />
+              {/* <Route path="/search-user/:userUid" element={<UserPage />} /> */}
             </Route>
           </Routes>
           <ReactQueryDevtools />

@@ -1,16 +1,15 @@
 import { IArticle, fetchUsersArticles } from '@/apis/feed';
-import { useUserUid } from '@/contexts/LoginUserState';
 import { useQuery } from '@tanstack/react-query';
 import ArticleCard from './ArticleCard';
+import { useParams } from 'react-router';
 
 const ArticlesDetail = () => {
-  const { userUid } = useUserUid();
-
+  const { userUid: targetUserUid } = useParams();
   const { data: articles } = useQuery({
-    queryKey: ['usersArticles', userUid!],
+    queryKey: ['usersArticles', targetUserUid!],
     queryFn: fetchUsersArticles,
   });
-  
+
   return (
     <>
       {articles?.map((article: IArticle) => {

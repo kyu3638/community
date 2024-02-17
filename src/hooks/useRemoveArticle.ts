@@ -7,7 +7,8 @@ export const useRemoveArticle = (articleId: string, currentPath: string) => {
   const { userUid } = useUserUid();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
+  const pathToArr = currentPath.split('/').filter((v) => v !== '');
+  const isNewsfeed = pathToArr[0] === 'article';
   return useMutation({
     mutationFn: () => onRemoveArticle(articleId),
     // 삭제 성공 시 newsFeed로 이동
@@ -15,9 +16,11 @@ export const useRemoveArticle = (articleId: string, currentPath: string) => {
       // const articleId = variables.articleId;
       await queryClient.cancelQueries({ queryKey: ['usersArticles', userUid!] });
       const previousData = queryClient.getQueryData(['usersArticles', userUid!]);
-      queryClient.setQueryData(['usersArticles', userUid!], (articles: IArticle[]) => {
-        return articles.filter((article) => article.articleId !== articleId);
-      });
+      if (previousData) {
+        queryClient.setQueryData(['usersArticles', userUid!], (articles: IArticle[]) => {
+          return articles.filter((article) => article.articleId !== articleId);
+        });
+      }
 
       return { previousData };
     },
@@ -27,8 +30,10 @@ export const useRemoveArticle = (articleId: string, currentPath: string) => {
       queryClient.setQueryData(['usersArticles', userUid!], context?.previousData);
     },
     onSuccess: () => {
-      if (currentPath !== '/mypage') {
+      if (isNewsfeed) {
         navigate('/');
+      } else {
+        navigate(currentPath);
       }
     },
   });
