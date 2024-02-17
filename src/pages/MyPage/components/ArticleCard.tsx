@@ -4,6 +4,7 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import loadingImage from '/loading.gif';
+import { Button } from '@/components/ui/button';
 
 const ArticleCard = ({ article }: { article: IArticle }) => {
   const [lenOfComments, setLenOfComments] = useState<number>();
@@ -72,6 +73,10 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
             )}
           </span>
         </div>
+      </div>
+      <div className="absolute top-5 right-5 flex gap-3">
+        <Button>수정</Button>
+        <Button>삭제</Button>
       </div>
     </div>
   );

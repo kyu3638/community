@@ -28,7 +28,7 @@ const NavBar = () => {
     <nav className="w-full h-24  flex items-center justify-between px-5">
       <Link to={'/'}>로고</Link>
       <div className="flex gap-4">
-        <Link to={'/newsfeed'}>뉴스피드</Link>
+        <Link to={'/'}>뉴스피드</Link>
         <Link to={'/search-user'} onClick={onClickReload}>
           유저 찾기
         </Link>

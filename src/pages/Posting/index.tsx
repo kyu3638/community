@@ -129,7 +129,7 @@ const Posting = () => {
         await updateDoc(docRef, { ...newFeed });
         console.log(`게시글이 업데이트 되었습니다.`);
       }
-      navigate('/newsfeed');
+      navigate('/');
     } catch (error) {
       console.log(error);
     }

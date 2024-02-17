@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { db } from '@/firebase/firebase';
 import { IFeed } from '@/types/common';
-import { deleteDoc, doc, getDoc } from '@firebase/firestore';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { doc, getDoc } from '@firebase/firestore';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import CommentsContainer from './CommentsContainer';
 import { useArticleLike } from '@/hooks/useArticleLike';
-// import Comments from './CommentsContainer';
+import { useRemoveArticle } from '@/hooks/useRemoveArticle';
 
 const Article = () => {
   const params = useParams();
@@ -20,8 +20,6 @@ const Article = () => {
   const [myArticle, setMyArticle] = useState(false);
 
   const { userUid } = useUserUid();
-
-  const navigate = useNavigate();
 
   const fetchArticle = async ({ queryKey }: { queryKey: string[] }): Promise<IFeed> => {
     const articleId = queryKey[1];
@@ -39,22 +37,7 @@ const Article = () => {
 
   const { mutate: likeArticle } = useArticleLike();
 
-  const onRemoveArticle = async () => {
-    try {
-      const articleRef = doc(db, 'feeds', articleId as string);
-      await deleteDoc(articleRef);
-      console.log(`articleId : ${articleId}에 해당하는 게시글이 삭제 되었습니다.`);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const { mutate: removeArticle } = useMutation({
-    mutationFn: onRemoveArticle,
-    // 삭제 성공 시 newsFeed로 이동
-    onSuccess: () => {
-      navigate('/newsfeed');
-    },
-  });
+  const { mutate: removeArticle } = useRemoveArticle(articleId);
 
   return (
     <PageWrap>
