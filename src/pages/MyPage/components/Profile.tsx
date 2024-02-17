@@ -10,7 +10,9 @@ import { auth, db } from '@/firebase/firebase';
 import { EmailAuthProvider, User, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUserUid } from '@/contexts/LoginUserState';
-import { isValid } from '../SignUpStepOne';
+import { isValid } from '../../SignUpStepOne';
+import FollowDetail from './FollowDetail';
+import ArticlesDetail from './ArticlesDetail';
 
 interface IUserProps {
   user: IUser | null;
@@ -23,6 +25,7 @@ const Profile = ({ user }: IUserProps) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [checkPassword, setCheckPassword] = useState('');
+  const [mode, setMode] = useState<'follower' | 'following' | 'articles' | 'comments'>('follower');
 
   const { userUid } = useUserUid();
 
@@ -80,13 +83,21 @@ const Profile = ({ user }: IUserProps) => {
       console.log(error);
     }
   };
+
+  const onClickModeHandler = (type: 'follower' | 'following' | 'articles' | 'comments') => {
+    setMode(type);
+  };
+
+  // console.log(`mode`, mode);
+  console.log(`user?.following`, user?.following);
+
   return (
     <ContentWrap>
-      <div className="flex gap-10 relative">
+      <div className="flex flex-col gap-5 relative">
         <Avatar className="w-48 h-48">
           <AvatarInProfile avatarImageSrc={user?.profileImage} />
         </Avatar>
-        <div className="flex-grow">
+        <div className="flex-grow pl-10">
           {isEdit ? (
             <>
               <span>닉네임</span>
@@ -102,12 +113,10 @@ const Profile = ({ user }: IUserProps) => {
             </>
           ) : (
             <>
-              <div>닉네임 : {user?.nickName}</div>
-              <div>소개말 : {user?.introduction}</div>
+              <h1 className="text-2xl font-bold mb-3">{user?.nickName}</h1>
+              <span className="inline-block mb-5">{user?.introduction}</span>
             </>
           )}
-          <div>팔로워 : {user?.follower.length}</div>
-          <div>팔로잉 : {user?.following.length}</div>
         </div>
         {isEdit ? (
           <Button onClick={onEditProfileHandler} className="absolute right-0 top-0">
@@ -119,11 +128,18 @@ const Profile = ({ user }: IUserProps) => {
           </Button>
         )}
       </div>
-      <div className="flex gap-10">
-        <div>팔로워</div>
-        <div>팔로잉</div>
-        <div>작성한 글</div>
-        <div>작성한 댓글</div>
+      <div className="flex justify-around">
+        <button onClick={() => onClickModeHandler('follower')}>
+          팔로워 <span>{user?.follower.length}</span>
+        </button>
+        <button onClick={() => onClickModeHandler('following')}>
+          팔로잉 <span>{user?.following.length}</span>
+        </button>
+        <button onClick={() => onClickModeHandler('articles')}>작성한 글</button>
+      </div>
+      <div>
+        {(mode === 'follower' || mode === 'following') && <FollowDetail mode={mode} />}
+        {mode === 'articles' && <ArticlesDetail />}
       </div>
     </ContentWrap>
   );

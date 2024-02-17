@@ -10,7 +10,19 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  getDoc,
 } from 'firebase/firestore';
+
+export const fetchUser = async ({ queryKey }) => {
+  try {
+    const userUid = queryKey[1];
+    const userRef = doc(db, 'users', userUid);
+    const docSnapshot = await getDoc(userRef);
+    return docSnapshot.data();
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const fetchUsers = async ({ queryKey, pageParam }) => {
   try {
@@ -51,6 +63,16 @@ export const followHandler = async ({ userUid, targetUid, type }) => {
 
     const targetDocRef = doc(db, 'users', targetUid);
     await updateDoc(targetDocRef, { follower: command(userUid) });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const fetchFollowing = async (uid: string) => {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    const docSnapshot = await getDoc(userDocRef);
+    return docSnapshot.data();
   } catch (error) {
     console.log(error);
   }
