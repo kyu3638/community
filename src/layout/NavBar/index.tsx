@@ -5,7 +5,7 @@ import { auth } from '@/firebase/firebase';
 import logoImage from '/logo.png';
 
 const NavBar = () => {
-  const { isLogin, updateUserUid } = useUserUid();
+  const { isLogin, userUid, updateUserUid } = useUserUid();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,7 +37,7 @@ const NavBar = () => {
         <Link to={'/search-user'} onClick={onClickReload}>
           유저 찾기
         </Link>
-        <Link to={'/mypage'}>마이페이지</Link>
+        <Link to={`/user/${userUid}`}>마이페이지</Link>
       </div>
       <div className="flex-grow flex justify-end gap-5">
         {isLogin ? (
