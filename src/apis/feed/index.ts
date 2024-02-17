@@ -31,8 +31,9 @@ export const fetchUsersArticles = async ({ queryKey }: { queryKey: string[] }) =
   }
 };
 
-export const onRemoveArticle = async (articleId: string) => {
+export const onRemoveArticle = async ( articleId: string) => {
   try {
+    console.log(isUser);
     const articleRef = doc(db, 'feeds', articleId as string);
     await deleteDoc(articleRef);
     console.log(`articleId : ${articleId}에 해당하는 게시글이 삭제 되었습니다.`);

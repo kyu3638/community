@@ -7,13 +7,18 @@ import loadingImage from '/loading.gif';
 import { Button } from '@/components/ui/button';
 import { useRemoveArticle } from '@/hooks/useRemoveArticle';
 import { useLocation } from 'react-router';
+import { useUserUid } from '@/contexts/LoginUserState';
 
 const ArticleCard = ({ article }: { article: IArticle }) => {
   const [lenOfComments, setLenOfComments] = useState<number>();
 
+  const { userUid } = useUserUid();
+
   const articleId = article.articleId;
 
   const location = useLocation();
+
+  const isUser = article.uid === userUid;
 
   const fetchParent = async ({ queryKey }: { queryKey: string[] }) => {
     try {
@@ -81,8 +86,12 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
         </div>
       </div>
       <div className="absolute top-5 right-5 flex gap-3">
-        <Button>수정</Button>
-        <Button onClick={() => removeArticle()}>삭제</Button>
+        {isUser && (
+          <>
+            <Button>수정</Button>
+            <Button onClick={() => removeArticle()}>삭제</Button>
+          </>
+        )}
       </div>
     </div>
   );
