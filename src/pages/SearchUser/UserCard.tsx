@@ -9,7 +9,7 @@ const UserCard = ({ user, editFollow }) => {
   const isMyProfile = user?.uid === userUid;
   return (
     <UserCardWrap>
-      <Link to={`/search-user/${user?.uid}`}>
+      <Link to={`/user/${user?.uid}`}>
         <AvatarInCard avatarImageSrc={user?.profileImage} />
       </Link>
       <div>
