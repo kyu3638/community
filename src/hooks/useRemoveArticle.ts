@@ -19,11 +19,12 @@ export const useRemoveArticle = (articleId: string, currentPath: string) => {
         return articles.filter((article) => article.articleId !== articleId);
       });
 
-      return previousData;
+      return { previousData };
     },
     onError: (error, __variables, context) => {
       console.log(error);
-      queryClient.setQueryData(['usersArticles', userUid!], context.previousData);
+      console.log(context);
+      queryClient.setQueryData(['usersArticles', userUid!], context?.previousData);
     },
     onSuccess: () => {
       if (currentPath !== '/mypage') {
