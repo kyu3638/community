@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useRemoveArticle } from '@/hooks/useRemoveArticle';
 import { useLocation } from 'react-router';
 import { useUserUid } from '@/contexts/LoginUserState';
+import { Link } from 'react-router-dom';
 
 const ArticleCard = ({ article }: { article: IArticle }) => {
   const [lenOfComments, setLenOfComments] = useState<number>();
@@ -89,7 +90,9 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
       <div className="absolute top-5 right-5 flex gap-3">
         {isUser && (
           <>
-            <Button>수정</Button>
+            <Link to={`/posting`} state={{ mode: 'edit', article: article, articleId: articleId }}>
+              <Button>수정</Button>
+            </Link>
             <Button onClick={() => removeArticle()}>삭제</Button>
           </>
         )}
