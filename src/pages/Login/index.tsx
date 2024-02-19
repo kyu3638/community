@@ -116,6 +116,7 @@ const Login = () => {
           placeholder={'이메일을 입력하세요'}
           value={email}
           onChange={onChangeEmail}
+          data_cy="idInput"
         />
         <LoginInput
           label={'비밀번호'}
@@ -123,10 +124,13 @@ const Login = () => {
           placeholder={'비밀번호를 입력하세요'}
           value={password}
           onChange={onChangePassword}
+          data_cy="passwordInput"
         />
       </InputsForm>
       <div className="flex flex-col gap-2">
-        <button onClick={onLoginHandler}>로그인</button>
+        <button data-cy="loginButton" onClick={onLoginHandler}>
+          로그인
+        </button>
         <button onClick={onMoveToSignUp}>회원가입</button>
         <button onClick={onLoginOAuth}>구글 로그인</button>
       </div>
@@ -136,11 +140,11 @@ const Login = () => {
 
 export default Login;
 
-export const LoginInput = ({ label, type, placeholder, value, onChange }: ILoginInput) => {
+export const LoginInput = ({ label, type, placeholder, value, onChange, data_cy }: ILoginInput) => {
   return (
     <>
-      <label>{label}</label>
-      <input type={type} placeholder={placeholder} value={value} onChange={onChange} />
+      <label htmlFor={data_cy}>{label}</label>
+      <input data-cy={data_cy} type={type} placeholder={placeholder} value={value} onChange={onChange} />
     </>
   );
 };

@@ -33,6 +33,7 @@ export interface ILoginInput {
   placeholder: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  data_cy: string;
 }
 
 export interface IInputsForm {
