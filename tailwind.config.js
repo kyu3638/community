@@ -69,6 +69,10 @@ module.exports = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      height: {
+        'nav-bar-height': '6rem',
+        'auth-page-height': 'calc(100vh - 6rem)',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

@@ -107,8 +107,8 @@ const Login = () => {
     }
   };
   return (
-    <div className="h-full flex flex-col justify-center items-center">
-      <div>로그인</div>
+    <div className="h-auth-page-height flex flex-col justify-center items-center">
+      <div>USER LOGIN</div>
       <InputsForm>
         <LoginInput
           label={'이메일'}
