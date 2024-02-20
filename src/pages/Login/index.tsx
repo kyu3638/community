@@ -11,10 +11,17 @@ import {
 } from 'firebase/auth';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { FaUser } from 'react-icons/fa';
+import { RiLockPasswordFill } from 'react-icons/ri';
+import { Input } from '@/components/ui/input';
+import googleLoginButton from '/google-login.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const isFormValid = () => {
+    return email.length > 0 && password.length > 0;
+  };
 
   const { updateUserUid } = useUserUid();
 
@@ -107,32 +114,41 @@ const Login = () => {
     }
   };
   return (
-    <div className="h-auth-page-height flex flex-col justify-center items-center">
-      <div>USER LOGIN</div>
-      <InputsForm>
+    <div className="h-auth-page-height flex justify-center items-center">
+      <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
+        <h1 className="text-xl font-extrabold">USER LOGIN</h1>
         <LoginInput
-          label={'이메일'}
+          label={<FaUser />}
           type={'text'}
           placeholder={'이메일을 입력하세요'}
           value={email}
           onChange={onChangeEmail}
-          data_cy="idInput"
+          testId="idInput"
         />
         <LoginInput
-          label={'비밀번호'}
+          label={<RiLockPasswordFill />}
           type={'password'}
           placeholder={'비밀번호를 입력하세요'}
           value={password}
           onChange={onChangePassword}
-          data_cy="passwordInput"
+          testId="passwordInput"
         />
-      </InputsForm>
-      <div className="flex flex-col gap-2">
-        <button data-cy="loginButton" onClick={onLoginHandler}>
-          로그인
-        </button>
-        <button onClick={onMoveToSignUp}>회원가입</button>
-        <button onClick={onLoginOAuth}>구글 로그인</button>
+        <div className="flex justify-around gap-5">
+          <button
+            className={`${
+              isFormValid() ? 'bg-[#0F172A]' : 'bg-[#F2F2F2] text-black'
+            }  px-5 py-2 rounded-sm text-sm text-white`}
+            data-cy="loginButton"
+            onClick={onLoginHandler}
+            disabled={!isFormValid}
+          >
+            로그인
+          </button>
+          <button className={'bg-[#0F172A] px-5 py-2 rounded-sm text-sm text-white'} onClick={onMoveToSignUp}>
+            회원가입
+          </button>
+        </div>
+        <img className="w-[187px] cursor-pointer" src={googleLoginButton} onClick={onLoginOAuth} />
       </div>
     </div>
   );
@@ -140,12 +156,13 @@ const Login = () => {
 
 export default Login;
 
-export const LoginInput = ({ label, type, placeholder, value, onChange, data_cy }: ILoginInput) => {
+// <FaUser /> <RiLockPasswordLine />  <RiLockPasswordFill />
+export const LoginInput = ({ label, type, placeholder, value, onChange, testId }: ILoginInput) => {
   return (
-    <>
-      <label htmlFor={data_cy}>{label}</label>
-      <input data-cy={data_cy} type={type} placeholder={placeholder} value={value} onChange={onChange} />
-    </>
+    <div className="flex justify-between items-center gap-2">
+      <label htmlFor={testId}>{label}</label>
+      <Input data-cy={testId} type={type} placeholder={placeholder} value={value} onChange={onChange} />
+    </div>
   );
 };
 

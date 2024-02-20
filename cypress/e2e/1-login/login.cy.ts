@@ -7,7 +7,6 @@ describe('로그인 화면', () => {
     cy.get('[data-cy=passwordInput]').as('passwordInput');
 
     // when - 아이디와 비밀번호를 입력하고 로그인 버튼을 클릭한다.
-
     cy.get('@idInput').type('tmdrbwjs@naver.com');
     cy.get('@passwordInput').type('asdfasdf!@');
 
