@@ -1,15 +1,17 @@
 import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, updateDoc } from 'firebase/firestore';
-import { InputsForm, LoginInput } from '../Login';
+import { LoginInput } from '../Login';
 import { useEffect, useState } from 'react';
 import { auth, db, storage } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
-import AvatarInCard from '@/components/Avatar/AvatarInCard';
 import unknownImage from '/unknown.png';
-import { FaRegImage } from 'react-icons/fa';
+import { FaRegImage, FaUser } from 'react-icons/fa';
 import AvatarInSignUp from '@/components/Avatar/AvatarInSignUp';
+import { Textarea } from '@/components/ui/textarea';
+import { PiPencilLineBold } from 'react-icons/pi';
+import { Input } from '@/components/ui/input';
 
 const SignUpStepTwo = () => {
   const [nickName, setNickName] = useState('');
@@ -31,7 +33,7 @@ const SignUpStepTwo = () => {
   const onChangeNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNickName(e.target.value);
   };
-  const onChangeIntroduction = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeIntroduction = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIntroduction(e.target.value);
   };
 
@@ -96,24 +98,32 @@ const SignUpStepTwo = () => {
           </label>
         </div>
         <input className="hidden" id="input-file" type="file" onChange={onHandleFileSelect} />
-        {/* <button onClick={handleUpload}>Upload</button> */}
-        <LoginInput
-          label={'닉네임'}
-          type={'text'}
-          placeholder={'닉네임을 입력하세요'}
-          value={nickName}
-          onChange={onChangeNickName}
-        />
-        <LoginInput
-          label={'인사말'}
-          type={'text'}
-          placeholder={'인사말을 입력하세요'}
-          value={introduction}
-          onChange={onChangeIntroduction}
-        />
-        <div className="flex flex-col gap-2">
-          <button onClick={signUpHandler}>완료</button>
+        <div className="flex items-center gap-2 w-full">
+          <label>
+            <FaUser />
+          </label>
+          <Input
+            data-cy={'nickNameInput'}
+            type={'text'}
+            placeholder={'닉네임을 입력하세요'}
+            value={nickName}
+            onChange={onChangeNickName}
+          />
         </div>
+        <div className="flex items-center gap-2 w-full">
+          <label>
+            <PiPencilLineBold />
+          </label>
+          <Textarea
+            placeholder={'인사말을 입력하세요'}
+            value={introduction}
+            onChange={onChangeIntroduction}
+            data-cy="introductionInput"
+          />
+        </div>
+        <button className={'bg-[#0F172A] px-5 py-2 rounded-sm text-sm text-white'} onClick={signUpHandler}>
+          완료
+        </button>
       </div>
     </AuthPageWrap>
   );
