@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { InputsForm, LoginInput } from '@/pages/Login';
+import { LoginInput } from '@/pages/Login';
 import {
   UserCredential,
   browserSessionPersistence,
@@ -19,6 +19,10 @@ const SignUpStepOne = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [checkPassword, setCheckPassword] = useState('');
+
+  const isStepOneValid = () => {
+    return password.length >= 10 && checkPassword.length >= 10;
+  };
 
   // 전역 관리할 유저 메일을 업데이트할 setter
   const { updateUserUid } = useUserUid();
@@ -101,7 +105,13 @@ const SignUpStepOne = () => {
           onChange={onChangeCheckPassword}
           testId="confirmPasswordInput"
         />
-        <button className="bg-[#0F172A] px-5 py-2 rounded-sm text-sm text-white" onClick={signUpHandler}>
+        <button
+          className={`${
+            isStepOneValid() ? 'bg-[#0F172A] text-white' : 'bg-[#F2F2F2] text-black'
+          }  px-5 py-2 rounded-sm text-sm cursor-pointer`}
+          onClick={signUpHandler}
+          disabled={!isStepOneValid()}
+        >
           다음
         </button>
       </div>
