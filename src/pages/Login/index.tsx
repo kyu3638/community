@@ -15,6 +15,7 @@ import { FaUser } from 'react-icons/fa';
 import { RiLockPasswordFill } from 'react-icons/ri';
 import { Input } from '@/components/ui/input';
 import googleLoginButton from '/google-login.png';
+import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -114,7 +115,7 @@ const Login = () => {
     }
   };
   return (
-    <div className="h-auth-page-height flex justify-center items-center">
+    <AuthPageWrap>
       <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
         <h1 className="text-xl font-extrabold">USER LOGIN</h1>
         <LoginInput
@@ -136,11 +137,11 @@ const Login = () => {
         <div className="flex justify-around gap-5">
           <button
             className={`${
-              isFormValid() ? 'bg-[#0F172A]' : 'bg-[#F2F2F2] text-black'
-            }  px-5 py-2 rounded-sm text-sm text-white`}
+              isFormValid() ? 'bg-[#0F172A] text-white' : 'bg-[#F2F2F2] text-black'
+            }  px-5 py-2 rounded-sm text-sm `}
             data-cy="loginButton"
             onClick={onLoginHandler}
-            disabled={!isFormValid}
+            disabled={!isFormValid()}
           >
             로그인
           </button>
@@ -150,7 +151,7 @@ const Login = () => {
         </div>
         <img className="w-[187px] cursor-pointer" src={googleLoginButton} onClick={onLoginOAuth} />
       </div>
-    </div>
+    </AuthPageWrap>
   );
 };
 

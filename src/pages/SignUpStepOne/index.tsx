@@ -11,6 +11,9 @@ import { useNavigate } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { IUser } from '@/types/common';
 import { useUserUid } from '@/contexts/LoginUserState';
+import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
+import { RiLockPasswordFill } from 'react-icons/ri';
+import { FaUser } from 'react-icons/fa';
 
 const SignUpStepOne = () => {
   const [email, setEmail] = useState('');
@@ -70,47 +73,39 @@ const SignUpStepOne = () => {
     }
   };
 
-  // /** 로그인 상태에서 접근되면 안되는 페이지들에서 내보내기 */
-  // useEffect(() => {
-  //   const _session_key = `firebase:authUser:${import.meta.env.VITE_FIREBASE_API_KEY}:[DEFAULT]`;
-  //   const sessionData = sessionStorage.getItem(_session_key);
-  //   if (sessionData) {
-  //     const uid = JSON.parse(sessionData).uid;
-  //     updateUserUid(uid);
-  //     navigate('/');
-  //   }
-  // }, []);
-
   return (
-    <div className="h-lvh flex flex-col justify-center items-center">
-      <div>회원가입 step 1</div>
-      <InputsForm>
+    <AuthPageWrap>
+      <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
+        <div className="text-xl font-extrabold">회원가입 step 1</div>
         <LoginInput
-          label={'이메일'}
+          label={<FaUser />}
           type={'text'}
           placeholder={'이메일을 입력하세요'}
           value={email}
           onChange={onChangeEmail}
+          testId="emailInput"
         />
         <LoginInput
-          label={'비밀번호'}
+          label={<RiLockPasswordFill />}
           type={'password'}
           placeholder={'비밀번호를 입력하세요'}
           value={password}
           onChange={onChangePassword}
+          testId="passwordInput"
         />
         <LoginInput
-          label={'비밀번호 확인'}
+          label={<RiLockPasswordFill />}
           type={'password'}
           placeholder={'비밀번호 확인을 입력하세요'}
           value={checkPassword}
           onChange={onChangeCheckPassword}
+          testId="confirmPasswordInput"
         />
-      </InputsForm>
-      <div className="flex flex-col gap-2">
-        <button onClick={signUpHandler}>다음</button>
+        <button className="bg-[#0F172A] px-5 py-2 rounded-sm text-sm text-white" onClick={signUpHandler}>
+          다음
+        </button>
       </div>
-    </div>
+    </AuthPageWrap>
   );
 };
 
@@ -123,7 +118,7 @@ export const isValid = (pw: string, checkPw: string) => {
       console.log(`비밀번호가 10자리 이상이고 영문, 숫자, 특수문자 중 2가지 이상 조합으로 유효합니다.`);
       return true;
     } else {
-      alert('비밀번호는 영어 대문자, 소문자, 숫자, 특수문자 중 2종류 문자 조합으로 설정바랍니다.');
+      alert('비밀번호는 10자 이상, 영어 대문자, 소문자, 숫자, 특수문자 중 2종류 문자 조합으로 설정바랍니다.');
       return false;
     }
   } else {
