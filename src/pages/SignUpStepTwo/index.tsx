@@ -1,6 +1,5 @@
 import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, updateDoc } from 'firebase/firestore';
-import { LoginInput } from '../Login';
 import { useEffect, useState } from 'react';
 import { auth, db, storage } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,8 @@ const SignUpStepTwo = () => {
   const [nickName, setNickName] = useState('');
   const [introduction, setIntroduction] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imageURL, setImageURL] = useState(unknownImage);
+  const [imageURL, setImageURL] = useState('');
+  const [imagePreviewURL, setImagePreviewURL] = useState(unknownImage);
   const { userUid, updateUserUid } = useUserUid();
 
   const navigate = useNavigate();
@@ -39,14 +39,18 @@ const SignUpStepTwo = () => {
 
   const onHandleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
-    setSelectedFile(file);
+    if (file) {
+      const tempURL = URL.createObjectURL(file);
+      setImagePreviewURL(tempURL);
+      setSelectedFile(file);
+    }
   };
+
   useEffect(() => {
     const handleUpload = async () => {
       if (selectedFile) {
         const imageRef = ref(storage, `userImage/${userUid}/${selectedFile.name}`);
         await uploadBytes(imageRef, selectedFile);
-        // storage에서 파일의 url
         const downloadURL = await getDownloadURL(imageRef);
         setImageURL(downloadURL);
       }
@@ -54,17 +58,11 @@ const SignUpStepTwo = () => {
     handleUpload();
   }, [selectedFile]);
 
-  // const handleUpload = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-  //   console.log(e);
-  //   e.preventDefault();
-  //   if (selectedFile) {
-  //     const imageRef = ref(storage, `userImage/${userUid}/${selectedFile.name}`);
-  //     await uploadBytes(imageRef, selectedFile);
-  //     // storage에서 파일의 url
-  //     const downloadURL = await getDownloadURL(imageRef);
-  //     setImageURL(downloadURL);
-  //   }
-  // };
+  useEffect(() => {
+    if (imageURL) {
+      setImagePreviewURL('');
+    }
+  }, [imageURL]);
 
   const signUpHandler = async () => {
     try {
@@ -90,14 +88,14 @@ const SignUpStepTwo = () => {
     <AuthPageWrap>
       <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
         <div className="text-xl font-extrabold">회원가입 step 2</div>
-        <div className="relative flex flex-col gap-0">
+        <AvatarInSignUp avatarImageSrc={imageURL || imagePreviewURL} />
+        <div className="flex items-center gap-5">
           <div className="text-l font-bold">프로필 이미지</div>
-          <AvatarInSignUp avatarImageSrc={imageURL} />
-          <label className="input-file-button absolute right-[9px] bottom-[9px] cursor-pointer" htmlFor="input-file">
+          <label className="input-file-button right-[9px] bottom-[9px] cursor-pointer" htmlFor="input-file">
             <FaRegImage size="35" />
           </label>
+          <input className="hidden" id="input-file" type="file" onChange={onHandleFileSelect} />
         </div>
-        <input className="hidden" id="input-file" type="file" onChange={onHandleFileSelect} />
         <div className="flex items-center gap-2 w-full">
           <label>
             <FaUser />
