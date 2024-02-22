@@ -143,7 +143,7 @@ const SignUpStepOne = () => {
             onChange={onChangeEmail}
             testId="emailInput"
           />
-          <span className={`${isEmailValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span data-cy='isEmailValidMessage' className={`${isEmailValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
             {emailMessage}
           </span>
         </div>
@@ -162,17 +162,17 @@ const SignUpStepOne = () => {
             placeholder={'비밀번호 확인을 입력하세요'}
             value={checkPassword}
             onChange={onChangeCheckPassword}
-            testId="confirmPasswordInput"
+            testId="checkPasswordInput"
           />
         </div>
         <div className="flex flex-col">
-          <span className={`${isPasswordValidValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span data-cy='PasswordValidMessage' className={`${isPasswordValidValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
             {passwordValidMessage}
           </span>
-          <span className={`${isPasswordLengthValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span data-cy='PasswordLengthMessage' className={`${isPasswordLengthValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
             {passwordLengthMessage}
           </span>
-          <span className={`${isPasswordSameValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span data-cy='PasswordSameMessage' className={`${isPasswordSameValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
             {passwordSameMessage}
           </span>
         </div>
