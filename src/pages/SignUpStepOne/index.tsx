@@ -12,8 +12,8 @@ import { doc, setDoc } from 'firebase/firestore';
 import { IUser } from '@/types/common';
 import { useUserUid } from '@/contexts/LoginUserState';
 import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
-import { RiLockPasswordFill } from 'react-icons/ri';
-import { FaUser } from 'react-icons/fa';
+import { RiLockPasswordFill } from '@react-icons/all-files/ri/RiLockPasswordFill';
+import { FaUser } from '@react-icons/all-files/fa/FaUser';
 
 const SignUpStepOne = () => {
   const [email, setEmail] = useState('');
@@ -143,7 +143,10 @@ const SignUpStepOne = () => {
             onChange={onChangeEmail}
             testId="emailInput"
           />
-          <span data-cy='isEmailValidMessage' className={`${isEmailValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span
+            data-cy="isEmailValidMessage"
+            className={`${isEmailValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}
+          >
             {emailMessage}
           </span>
         </div>
@@ -166,13 +169,22 @@ const SignUpStepOne = () => {
           />
         </div>
         <div className="flex flex-col">
-          <span data-cy='PasswordValidMessage' className={`${isPasswordValidValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span
+            data-cy="PasswordValidMessage"
+            className={`${isPasswordValidValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}
+          >
             {passwordValidMessage}
           </span>
-          <span data-cy='PasswordLengthMessage' className={`${isPasswordLengthValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span
+            data-cy="PasswordLengthMessage"
+            className={`${isPasswordLengthValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}
+          >
             {passwordLengthMessage}
           </span>
-          <span data-cy='PasswordSameMessage' className={`${isPasswordSameValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}>
+          <span
+            data-cy="PasswordSameMessage"
+            className={`${isPasswordSameValid ? 'text-[#4cd964]' : 'text-[#ff3b30]'} text-sm font-semibold`}
+          >
             {passwordSameMessage}
           </span>
         </div>

@@ -17,8 +17,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { FaRegHeart } from 'react-icons/fa';
-import { FcLike } from 'react-icons/fc';
+import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
+import { FcLike } from '@react-icons/all-files/fc/FcLike';
 import unknownImage from '/unknown.png';
 
 interface ICommentsProps {

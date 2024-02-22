@@ -6,9 +6,9 @@ import { collection, getDocs, orderBy, query } from '@firebase/firestore';
 import { useQuery } from '@tanstack/react-query';
 import AvatarInComment from '@/components/Avatar/AvatarInComment';
 import { Link } from 'react-router-dom';
-import { FaRegHeart } from 'react-icons/fa';
+import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
 import { useUserUid } from '@/contexts/LoginUserState';
-import { FcLike } from 'react-icons/fc';
+import { FcLike } from '@react-icons/all-files/fc/FcLike';
 import { useArticleLike } from '@/hooks/useArticleLike';
 import { IFeed } from '@/types/common';
 
