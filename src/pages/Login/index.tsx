@@ -11,11 +11,11 @@ import {
 } from 'firebase/auth';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { FaUser } from 'react-icons/fa';
-import { RiLockPasswordFill } from 'react-icons/ri';
 import { Input } from '@/components/ui/input';
 import googleLoginButton from '/google-login.png';
 import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
+import { FaUser } from '@react-icons/all-files/fa/FaUser';
+import { RiLockPasswordFill } from '@react-icons/all-files/ri/RiLockPasswordFill';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -149,7 +149,7 @@ const Login = () => {
             회원가입
           </button>
         </div>
-        <img className="w-[187px] cursor-pointer" src={googleLoginButton} onClick={onLoginOAuth} />
+        <img rel="preload" className="w-[187px] cursor-pointer" src={googleLoginButton} onClick={onLoginOAuth} />
       </div>
     </AuthPageWrap>
   );

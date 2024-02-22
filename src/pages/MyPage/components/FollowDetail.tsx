@@ -4,6 +4,7 @@ import { useFollow } from '@/hooks/useFollow';
 import { useUser } from '@/hooks/useUser';
 import UserCard from '@/pages/SearchUser/UserCard';
 import { useParams } from 'react-router';
+import { IUser } from '@/types/common';
 
 const FollowDetail = ({ mode }: { mode: string }) => {
   const { userUid: targetUserUid } = useParams();
@@ -25,7 +26,7 @@ const FollowDetail = ({ mode }: { mode: string }) => {
   return (
     <>
       {resultFollowing.map((doc, index) => {
-        const user = doc.data;
+        const user = doc.data as IUser;
         return <UserCard key={index} user={user} editFollow={editFollow} />;
       })}
     </>

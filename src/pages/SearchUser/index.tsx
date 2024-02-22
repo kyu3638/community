@@ -8,6 +8,7 @@ import { fetchUsers } from '@/apis/user/users';
 import { CgSearch } from 'react-icons/cg';
 import UserCard from './UserCard';
 import { useFollow } from '@/hooks/useFollow';
+import { IUser } from '@/types/common';
 
 const SearchUser = () => {
   const { searchKeyword, setSearchKeyword, mutate: editFollow } = useFollow();
@@ -23,7 +24,8 @@ const SearchUser = () => {
     queryFn: fetchUsers,
     initialPageParam: null,
     getNextPageParam: (lastPage) => {
-      return lastPage?.lastDoc ? lastPage?.lastDoc : null;
+      const nextPageStart = lastPage?.lastDoc ? lastPage.lastDoc : null;
+      return nextPageStart;
     },
   });
 
@@ -44,7 +46,7 @@ const SearchUser = () => {
           </div>
           <div>
             {usersToShow?.map((user, index) => {
-              return <UserCard key={`search-user-${index}`} user={user} editFollow={editFollow} />;
+              return <UserCard key={`search-user-${index}`} user={user as IUser} editFollow={editFollow} />;
             })}
           </div>
         </ContentWrap>
