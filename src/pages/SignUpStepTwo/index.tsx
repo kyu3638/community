@@ -54,13 +54,13 @@ const SignUpStepTwo = () => {
     const handleUpload = async () => {
       if (selectedFile) {
         const optionComment = {
-          maxWidthOrHeight: 60,
-        };
-        const optionCard = {
           maxWidthOrHeight: 100,
         };
+        const optionCard = {
+          maxWidthOrHeight: 150,
+        };
         const optionProfile = {
-          maxWidthOrHeight: 230,
+          maxWidthOrHeight: 300,
         };
         const resizedImageFileComment = await imageCompression(selectedFile, optionComment);
         const resizedImageFileCard = await imageCompression(selectedFile, optionCard);
