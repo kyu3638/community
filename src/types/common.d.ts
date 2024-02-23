@@ -1,5 +1,5 @@
 import { DocumentData } from 'firebase/firestore';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 export interface IChildrenProps {
   children: ReactNode;
@@ -28,11 +28,12 @@ export interface IUser extends DocumentData {
 }
 
 export interface ILoginInput {
-  label: string;
+  label: string | React.ReactNode;
   type: string;
   placeholder: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  testId: string;
 }
 
 export interface IInputsForm {

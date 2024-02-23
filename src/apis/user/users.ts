@@ -11,9 +11,11 @@ import {
   arrayUnion,
   arrayRemove,
   getDoc,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 
-export const fetchUser = async ({ queryKey }) => {
+export const fetchUser = async ({ queryKey }: { queryKey: string[] }) => {
   try {
     const userUid = queryKey[1];
     const userRef = doc(db, 'users', userUid);
@@ -24,7 +26,13 @@ export const fetchUser = async ({ queryKey }) => {
   }
 };
 
-export const fetchUsers = async ({ queryKey, pageParam }) => {
+export const fetchUsers = async ({
+  queryKey,
+  pageParam,
+}: {
+  queryKey: string[];
+  pageParam: QueryDocumentSnapshot<DocumentData, DocumentData> | null;
+}) => {
   try {
     const keyword = queryKey[1];
     // 검색 키워드가 있는 경우와 없는 경우 구분
@@ -54,7 +62,15 @@ export const fetchUsers = async ({ queryKey, pageParam }) => {
   }
 };
 
-export const followHandler = async ({ userUid, targetUid, type }) => {
+export const followHandler = async ({
+  userUid,
+  targetUid,
+  type,
+}: {
+  userUid: string;
+  targetUid: string;
+  type: string;
+}) => {
   try {
     const command = type === 'addFollowing' ? arrayUnion : arrayRemove;
 

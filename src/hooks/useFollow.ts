@@ -22,33 +22,36 @@ export const useFollow = () => {
       // const previousFollowingData = queryClient.getQueryData(['following', targetUid]);
 
       if (previousSearchData) {
-        queryClient.setQueryData(['users', searchKeyword], (prevUsers) => {
-          const newPages = prevUsers.pages.map((docs) => {
-            const newQuerySnapshot = docs.querySnapshot.map((user) => {
-              if (user.uid === targetUid) {
-                if (user.follower.includes(userUid)) {
-                  const removed = user.follower.filter((uid: string) => uid !== userUid);
-                  return { ...user, follower: removed };
-                } else {
-                  const added = [...user.follower, userUid];
-                  return { ...user, follower: added };
+        queryClient.setQueryData(
+          ['users', searchKeyword],
+          (prevUsers: { pageParams: IUser | null; pages: { querySnapshot: IUser[]; lastDoc: IUser }[] }) => {
+            const newPages = prevUsers.pages.map((docs) => {
+              const newQuerySnapshot = docs.querySnapshot.map((user) => {
+                if (user.uid === targetUid) {
+                  if (user.follower.includes(userUid)) {
+                    const removed = user.follower.filter((uid: string) => uid !== userUid);
+                    return { ...user, follower: removed };
+                  } else {
+                    const added = [...user.follower, userUid];
+                    return { ...user, follower: added };
+                  }
                 }
-              }
-              if (user.uid === userUid) {
-                if (user.following.includes(targetUid)) {
-                  const removed = user.following.filter((uid: string) => uid !== targetUid);
-                  return { ...user, following: removed };
-                } else {
-                  const added = [...user.following, targetUid];
-                  return { ...user, following: added };
+                if (user.uid === userUid) {
+                  if (user.following.includes(targetUid)) {
+                    const removed = user.following.filter((uid: string) => uid !== targetUid);
+                    return { ...user, following: removed };
+                  } else {
+                    const added = [...user.following, targetUid];
+                    return { ...user, following: added };
+                  }
                 }
-              }
-              return { ...user };
+                return { ...user };
+              });
+              return { ...docs, querySnapshot: newQuerySnapshot };
             });
-            return { ...docs, querySnapshot: newQuerySnapshot };
-          });
-          return { pageParams: prevUsers.pageParams, pages: newPages };
-        });
+            return { pageParams: prevUsers.pageParams, pages: newPages };
+          }
+        );
       }
       // 내 팔로우 목록에서 추가 또는 삭제
       if (previousUserData) {
@@ -63,7 +66,7 @@ export const useFollow = () => {
         });
       }
       if (previousFollowerData) {
-        queryClient.setQueryData(['follower', targetUid], (prevTarget) => {
+        queryClient.setQueryData(['follower', targetUid], (prevTarget: IUser) => {
           if (prevTarget.follower.includes(userUid)) {
             console.log(`언팔할 때`);
             console.log(`userUid`, userUid);

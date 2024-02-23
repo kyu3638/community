@@ -26,7 +26,7 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="w-full h-24 flex items-center justify-around px-5 border-b">
+    <nav className="w-full h-nav-bar-height flex items-center justify-around px-5 border-b">
       <div className="flex justify-start flex-grow">
         <Link to={'/'}>
           <img className="w-[50px] h-[50px]" src={logoImage} />

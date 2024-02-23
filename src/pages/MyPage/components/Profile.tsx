@@ -88,12 +88,13 @@ const Profile = ({ user }: IUserProps) => {
     }
   };
 
-  const onClickModeHandler = (type: 'follower' | 'following' | 'articles' | 'comments') => {
+  const onClickModeHandler = (type: 'follower' | 'following' | 'articles') => {
     setMode(type);
   };
 
-  // console.log(`mode`, mode);
-  console.log(`user?.following`, user?.following);
+  const sectionColor = (type: 'follower' | 'following' | 'articles') => {
+    if (mode !== type) return 'text-gray-400';
+  };
 
   return (
     <ContentWrap>
@@ -145,13 +146,15 @@ const Profile = ({ user }: IUserProps) => {
         )}
       </div>
       <div className="flex justify-around">
-        <button onClick={() => onClickModeHandler('follower')}>
+        <button className={`${sectionColor('follower')}`} onClick={() => onClickModeHandler('follower')}>
           팔로워 <span>{user?.follower.length}</span>
         </button>
-        <button onClick={() => onClickModeHandler('following')}>
+        <button className={`${sectionColor('following')}`} onClick={() => onClickModeHandler('following')}>
           팔로잉 <span>{user?.following.length}</span>
         </button>
-        <button onClick={() => onClickModeHandler('articles')}>작성한 글</button>
+        <button className={`${sectionColor('articles')}`} onClick={() => onClickModeHandler('articles')}>
+          작성한 글
+        </button>
       </div>
       <div>
         {(mode === 'follower' || mode === 'following') && <FollowDetail mode={mode} />}
