@@ -33,7 +33,6 @@ export const fetchUsers = async ({
   queryKey: string[];
   pageParam: QueryDocumentSnapshot<DocumentData, DocumentData> | null;
 }) => {
-  console.log(pageParam);
   try {
     const keyword = queryKey[1];
     // 검색 키워드가 있는 경우와 없는 경우 구분

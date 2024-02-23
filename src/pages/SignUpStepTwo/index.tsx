@@ -10,7 +10,7 @@ import { FaRegImage } from '@react-icons/all-files/fa/FaRegImage';
 import { FaUser } from '@react-icons/all-files/fa/FaUser';
 import AvatarInSignUp from '@/components/Avatar/AvatarInSignUp';
 import { Textarea } from '@/components/ui/textarea';
-import { PiPencilLineBold } from 'react-icons/pi';
+// import { PiPencilLineBold } from 'react-icons/pi';
 import { Input } from '@/components/ui/input';
 
 const SignUpStepTwo = () => {
@@ -93,7 +93,7 @@ const SignUpStepTwo = () => {
         <div className="flex items-center gap-5">
           <div className="text-l font-bold">프로필 이미지</div>
           <label className="input-file-button right-[9px] bottom-[9px] cursor-pointer" htmlFor="input-file">
-            <FaRegImage size="35" />
+            <FaUser size="35" />
           </label>
           <input className="hidden" id="input-file" type="file" onChange={onHandleFileSelect} />
         </div>
@@ -111,7 +111,7 @@ const SignUpStepTwo = () => {
         </div>
         <div className="flex items-center gap-2 w-full">
           <label>
-            <PiPencilLineBold />
+            <FaUser />
           </label>
           <Textarea
             placeholder={'인사말을 입력하세요'}

@@ -5,10 +5,21 @@ import { useEffect } from 'react';
 import { useUserUid } from './contexts/LoginUserState';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import SearchUser from './pages/SearchUser';
-import NavBar from './layout/NavBar';
+
+// import NavBar from './layout/NavBar';
+// import GlobalStyle from './GlobalStyles';
+// import Login from './pages/Login';
+// import SignUpStepOne from './pages/SignUpStepOne';
+// import SignUpStepTwo from './pages/SignUpStepTwo';
+// import Newsfeed from './pages/NewsFeed';
+// import Article from './pages/Article';
+// import Posting from './pages/Posting';
+// import MyPage from './pages/MyPage';
+// import SearchUser from './pages/SearchUser';
+
 import { lazy, Suspense } from 'react';
 
+const NavBar = lazy(() => import('@/layout/NavBar'));
 const Login = lazy(() => import('@/pages/Login'));
 const SignUpStepOne = lazy(() => import('@/pages/SignUpStepOne'));
 const SignUpStepTwo = lazy(() => import('@/pages/SignUpStepTwo'));
@@ -16,6 +27,7 @@ const MyPage = lazy(() => import('@/pages/MyPage'));
 const Posting = lazy(() => import('@/pages/Posting'));
 const Article = lazy(() => import('@/pages/Article'));
 const Newsfeed = lazy(() => import('@/pages/NewsFeed'));
+const SearchUser = lazy(() => import('@/pages/SearchUser'));
 const GlobalStyle = lazy(() => import('@/GlobalStyles'));
 
 const queryClient = new QueryClient();
@@ -40,7 +52,6 @@ function App() {
             <GlobalStyle />
             <NavBar />
             <Routes>
-              {/* <Route path="/" element={<Home />} /> */}
               <Route path="/login" element={<Login />} />
               <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
               <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
