@@ -19,7 +19,11 @@ export interface IUser extends DocumentData {
   email: string;
   nickName: string;
   introduction: string;
-  profileImage: string;
+  profileImage: {
+    profile: string;
+    card: string;
+    comment: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   follower: string[];

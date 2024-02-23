@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { fetchUsers } from '@/apis/user/users';
-import { CgSearch } from '@react-icons/all-files/cg/CgSearch';
+// import { CgSearch } from '@react-icons/all-files/cg/CgSearch';
+import { FaUser } from '@react-icons/all-files/fa/FaUser';
 import UserCard from './UserCard';
 import { useFollow } from '@/hooks/useFollow';
 import { IUser } from '@/types/common';
@@ -41,7 +42,7 @@ const SearchUser = () => {
       <PageWrap>
         <ContentWrap>
           <div className="flex items-center gap-5">
-            <CgSearch size={35} />
+            <FaUser size={35} /> 임시
             <Input value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </div>
           <div>

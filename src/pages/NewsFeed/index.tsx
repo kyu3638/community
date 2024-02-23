@@ -48,7 +48,7 @@ const Newsfeed = () => {
 
           return (
             <ArticleWrap key={`newsfeed-${index}`}>
-              <Link to={`/search-user/${feed.uid}`}>
+              <Link to={`/user/${feed.uid}`}>
                 <div className="flex items-center gap-5">
                   <AvatarInComment avatarImageSrc={feed.profileImage} />
                   <span className="font-bold">{feed.nickName}</span>

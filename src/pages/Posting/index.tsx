@@ -40,7 +40,7 @@ const Posting = () => {
       const userRef = doc(db, 'users', userUid as string);
       const user = (await getDoc(userRef)).data() as IUser;
       setNickName(user.nickName);
-      setProfileImage(user.profileImage);
+      setProfileImage(user.profileImage.comment);
     };
     getUser();
   }, []);

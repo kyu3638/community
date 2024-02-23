@@ -17,7 +17,7 @@ const UserCard = ({
   return (
     <UserCardWrap>
       <Link to={`/user/${user?.uid}`}>
-        <AvatarInCard avatarImageSrc={user?.profileImage} />
+        <AvatarInCard avatarImageSrc={user?.profileImage.card} />
       </Link>
       <div>
         <div>닉네임 : {user?.nickName}</div>
