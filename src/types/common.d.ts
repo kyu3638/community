@@ -69,7 +69,7 @@ export interface IComment {
   comment: string;
   parentId: string | null;
   like: string[];
-  createdAt: Date;
+  createdAt: Date | Timestamp;
   updatedAt: Date;
   isRemoved: boolean;
 }
