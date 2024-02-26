@@ -10,7 +10,7 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const curPage = useCallback(
+  const isCurrentPage = useCallback(
     (pageName?: string) => {
       if (pageName === location.pathname.split('/').filter((v) => v !== '')[0]) {
         return 'font-bold';
@@ -38,19 +38,20 @@ const NavBar = () => {
 
   return (
     <nav className="w-full h-nav-bar-height flex items-center justify-around px-5 border-b-2 bg-[#edf3fd]">
-      <div className="flex justify-start flex-grow">
+      <div className="flex justify-start flex-grow items-center">
         <Link to={'/'}>
           <img className="w-[50px] h-[50px]" src={logoImage} />
         </Link>
+        <h1 className="text-2xl">코드숲</h1>
       </div>
       <div className="flex-grow flex justify-center gap-5">
-        <Link className={`${curPage(undefined)}`} to={'/'}>
+        <Link className={`${isCurrentPage(undefined)}`} to={'/'}>
           뉴스피드
         </Link>
-        <Link className={`${curPage('search-user')}`} to={'/search-user'} onClick={onClickReload}>
+        <Link className={`${isCurrentPage('search-user')}`} to={'/search-user'} onClick={onClickReload}>
           유저 찾기
         </Link>
-        <Link className={`${curPage('user')}`} to={`/user/${userUid}`}>
+        <Link className={`${isCurrentPage('user')}`} to={`/user/${userUid}`}>
           마이페이지
         </Link>
       </div>
