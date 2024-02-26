@@ -20,7 +20,11 @@ const SignUpStepTwo = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState('');
   const [imagePreviewURL, setImagePreviewURL] = useState(unknownImage);
-  const [saveProfileImages, setSaveProfileImages] = useState({ card: '', comment: '', profile: '' });
+  const [saveProfileImages, setSaveProfileImages] = useState({
+    card: unknownImage,
+    comment: unknownImage,
+    profile: unknownImage,
+  });
 
   const { userUid, updateUserUid } = useUserUid();
 

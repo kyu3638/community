@@ -13,6 +13,8 @@ import { Link } from 'react-router-dom';
 import CommentsContainer from './CommentsContainer';
 import { useArticleLike } from '@/hooks/useArticleLike';
 import { useRemoveArticle } from '@/hooks/useRemoveArticle';
+import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
+import { FcLike } from '@react-icons/all-files/fc/FcLike';
 
 const Article = () => {
   const params = useParams();
@@ -52,9 +54,13 @@ const Article = () => {
         <div className="flex gap-10">
           <div>{article?.like.length}</div>
           {article?.like.includes(userUid as string) ? (
-            <div onClick={() => likeArticle({ articleId: articleId, type: 'removeLike' })}>안좋아요^^</div>
+            <div onClick={() => likeArticle({ articleId: articleId, type: 'removeLike' })}>
+              <FcLike />
+            </div>
           ) : (
-            <div onClick={() => likeArticle({ articleId: articleId, type: 'addLike' })}>좋아요</div>
+            <div onClick={() => likeArticle({ articleId: articleId, type: 'addLike' })}>
+              <FaRegHeart />
+            </div>
           )}
         </div>
         {myArticle && (

@@ -10,10 +10,11 @@ import { db, storage } from '@/firebase/firebase';
 import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
-import { addDoc, collection, doc, getDoc, updateDoc } from '@firebase/firestore';
+import { collection, doc, getDoc, updateDoc } from '@firebase/firestore';
 import { IFeed, IUser } from '@/types/common';
 import { useLocation, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { setDoc } from 'firebase/firestore';
 
 const Posting = () => {
   const queryClient = useQueryClient();
@@ -25,12 +26,9 @@ const Posting = () => {
   const [title, setTitle] = useState(article?.title || '');
   const [content, setContent] = useState(article?.content || '');
   const [images, setImages] = useState<string[]>(article?.images || []);
+  const [imagesObj, setImagesObj] = useState({});
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(mode);
-    console.log(article);
-  }, []);
+  const [newFeedRef] = useState(doc(collection(db, 'feeds')));
 
   const { userUid } = useUserUid();
 
@@ -52,25 +50,48 @@ const Posting = () => {
     input.click();
     input.onchange = async () => {
       const file = input.files ? input.files[0] : null;
-      if (file) {
-        const storageRef = ref(storage, `postImage/${userUid}/${file.name}`);
-        await uploadBytes(storageRef, file);
-        const downLoadURL = await getDownloadURL(storageRef);
-        if (quillRef.current) {
-          const editor = quillRef.current.getEditor();
-          const range = editor.getSelection() as RangeStatic;
-          const newRange = { ...range, index: range.index + 1 };
-          editor.insertEmbed(range.index, 'image', downLoadURL);
-          editor.setSelection(newRange);
-        }
-        setImages((prev) => [...prev, downLoadURL]);
-      }
+      const reader = new FileReader();
+      if (!file || !quillRef.current) return;
+      // base64형태로 파일을 띄움
+      const editor = quillRef.current.getEditor();
+      const range = editor.getSelection() as RangeStatic;
+      const newRange = { ...range, index: range.index + 1 };
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        console.log(`이미지를 base64형태로 삽입`);
+        const base64 = reader.result as string;
+        editor.insertEmbed(range.index, 'image', base64);
+        editor.setSelection(newRange);
+      };
+
+      const storageRef = ref(storage, `postImage/${newFeedRef.id}/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const downLoadURL = await getDownloadURL(storageRef);
+
+      console.log(`storage 저장 후 url 받아와 객체로 생성`);
+      const base64 = reader.result as string;
+      setImages((prev) => [...prev, downLoadURL]);
+      setImagesObj((prev) => ({ ...prev, [base64]: downLoadURL }));
     };
   };
 
   useEffect(() => {
-    console.log(images);
-  }, [images]);
+    // base64가 있다면 url로 바꿔 줌
+    for (const [base64, url] of Object.entries(imagesObj)) {
+      if (content.includes(base64)) {
+        const encodedFilePath = (url as string).split('/o/')[1].split('?alt=media')[0];
+        const filePath = decodeURIComponent(encodedFilePath);
+        console.log(`filePath`, filePath);
+
+        // const newContent = content.replace(base64, url);
+        // setContent(newContent);
+      }
+    }
+  }, [imagesObj]);
+
+  useEffect(() => {
+    console.log(content);
+  }, [content]);
 
   const modules = useMemo(() => {
     return {
@@ -105,14 +126,20 @@ const Posting = () => {
 
   const onPostUploadHandler = async () => {
     try {
-      console.log(title);
-      console.log(content);
+      // content에서 base64를 url로 변경
+      let newContent = content;
+      for (const [base64, url] of Object.entries(imagesObj)) {
+        if (content.includes(base64)) {
+          newContent = newContent.replace(base64, url);
+        }
+      }
+
       const newFeed: IFeed = {
         uid: userUid,
         nickName: nickName,
         profileImage: profileImage,
         title: title,
-        content: content,
+        content: newContent,
         like: article?.like || [],
         images: images,
         createdAt: article?.createdAt || new Date(),
@@ -120,8 +147,8 @@ const Posting = () => {
       };
       // 새글 생성일 경우 새로운 doc add
       if (mode === 'create') {
-        const docRef = collection(db, 'feeds');
-        await addDoc(docRef, newFeed);
+        const docRef = doc(db, 'feeds', newFeedRef.id);
+        await setDoc(docRef, newFeed);
       }
       // 수정일 경우 기존 doc update
       if (mode === 'edit') {
