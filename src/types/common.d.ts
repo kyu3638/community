@@ -19,7 +19,11 @@ export interface IUser extends DocumentData {
   email: string;
   nickName: string;
   introduction: string;
-  profileImage: string;
+  profileImage: {
+    profile: string;
+    card: string;
+    comment: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   follower: string[];
@@ -40,6 +44,11 @@ export interface IInputsForm {
   children: ReactNode;
 }
 
+interface uploadImage {
+  base64?: string;
+  url: string;
+  filePath: string;
+}
 export interface IFeed {
   uid: UserUidType;
   nickName: string;
@@ -47,7 +56,7 @@ export interface IFeed {
   title: string;
   content: string;
   like: string[];
-  images: string[];
+  images: uploadImage[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -114,7 +114,7 @@ const SignUpStepOne = () => {
               email: email,
               nickName: '',
               introduction: '',
-              profileImage: '',
+              profileImage: { comment: '', card: '', profile: '' },
               createdAt: new Date(),
               updatedAt: new Date(),
               follower: [],

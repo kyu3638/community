@@ -99,7 +99,7 @@ const Login = () => {
           email: user?.email as string,
           nickName: '',
           introduction: '',
-          profileImage: '',
+          profileImage: { comment: '', card: '', profile: '' },
           like: [],
           createdAt: new Date(),
           updatedAt: new Date(),

@@ -100,7 +100,7 @@ const Profile = ({ user }: IUserProps) => {
     <ContentWrap>
       <div className="flex flex-col gap-5 relative">
         <Avatar className="w-48 h-48">
-          <AvatarInProfile avatarImageSrc={user?.profileImage} />
+          <AvatarInProfile avatarImageSrc={user?.profileImage.profile} />
         </Avatar>
         <div className="flex-grow pl-10">
           {isEdit ? (
