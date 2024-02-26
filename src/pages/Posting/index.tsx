@@ -7,11 +7,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { db, storage } from '@/firebase/firebase';
-import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
+import { getDownloadURL, ref, uploadBytes, deleteObject } from '@firebase/storage';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
 import { collection, doc, getDoc, updateDoc } from '@firebase/firestore';
-import { IFeed, IUser } from '@/types/common';
+import { IFeed, IUser, uploadImage } from '@/types/common';
 import { useLocation, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { setDoc } from 'firebase/firestore';
@@ -25,8 +25,7 @@ const Posting = () => {
   const [profileImage, setProfileImage] = useState(article?.profileImage || '');
   const [title, setTitle] = useState(article?.title || '');
   const [content, setContent] = useState(article?.content || '');
-  const [images, setImages] = useState<string[]>(article?.images || []);
-  const [imagesObj, setImagesObj] = useState({});
+  const [imageDataClient, setImageDataClient] = useState(article?.images || []);
   const navigate = useNavigate();
   const [newFeedRef] = useState(doc(collection(db, 'feeds')));
 
@@ -64,34 +63,21 @@ const Posting = () => {
         editor.setSelection(newRange);
       };
 
-      const storageRef = ref(storage, `postImage/${newFeedRef.id}/${file.name}`);
+      let filePath = '';
+      if (mode === 'create') {
+        filePath = `postImage/${newFeedRef.id}/${file.name}`;
+      } else if (mode === 'edit') {
+        filePath = `postImage/${articleId}/${file.name}`;
+      }
+      const storageRef = ref(storage, filePath);
       await uploadBytes(storageRef, file);
       const downLoadURL = await getDownloadURL(storageRef);
 
       console.log(`storage 저장 후 url 받아와 객체로 생성`);
       const base64 = reader.result as string;
-      setImages((prev) => [...prev, downLoadURL]);
-      setImagesObj((prev) => ({ ...prev, [base64]: downLoadURL }));
+      setImageDataClient((prev: uploadImage[]) => [...prev, { base64: base64, url: downLoadURL, filePath: filePath }]);
     };
   };
-
-  useEffect(() => {
-    // base64가 있다면 url로 바꿔 줌
-    for (const [base64, url] of Object.entries(imagesObj)) {
-      if (content.includes(base64)) {
-        const encodedFilePath = (url as string).split('/o/')[1].split('?alt=media')[0];
-        const filePath = decodeURIComponent(encodedFilePath);
-        console.log(`filePath`, filePath);
-
-        // const newContent = content.replace(base64, url);
-        // setContent(newContent);
-      }
-    }
-  }, [imagesObj]);
-
-  useEffect(() => {
-    console.log(content);
-  }, [content]);
 
   const modules = useMemo(() => {
     return {
@@ -128,11 +114,29 @@ const Posting = () => {
     try {
       // content에서 base64를 url로 변경
       let newContent = content;
-      for (const [base64, url] of Object.entries(imagesObj)) {
+      let editImages = imageDataClient;
+      for (const { base64, url, filePath } of imageDataClient) {
+        const editUrl = url.replace('&', '&amp;');
+        // base64를 포함한 경우
+        // url을 포함한 경우
         if (content.includes(base64)) {
+          console.log(`삽입된 이미지가 있어 base64 데이터가 있으므로 url로 변경한다.`);
           newContent = newContent.replace(base64, url);
+          continue;
+        } else if (content.includes(editUrl)) {
+          console.log(`기존 이미지가 그대로 있어 url이 있으므로 별도 처리 없이 다음 동작을 진행한다.`);
+          continue;
+        } else {
+          console.log(`base64와 url이 없다는 것은 이미지가 삭제되었다는 의미이므로 state와 storage에서 삭제한다.`);
+          editImages = editImages.filter((obj: uploadImage) => obj.base64 !== base64);
+          await deleteObject(ref(storage, filePath));
         }
       }
+      const newImages = editImages.map((obj: uploadImage) => {
+        const url = obj.url;
+        const filePath = obj.filePath;
+        return { url, filePath };
+      });
 
       const newFeed: IFeed = {
         uid: userUid,
@@ -141,7 +145,7 @@ const Posting = () => {
         title: title,
         content: newContent,
         like: article?.like || [],
-        images: images,
+        images: newImages,
         createdAt: article?.createdAt || new Date(),
         updatedAt: new Date(),
       };
