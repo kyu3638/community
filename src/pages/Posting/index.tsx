@@ -1,5 +1,4 @@
 import PageWrap from '@/components/Wrap/PageWrap';
-import EditorWrap from '@/components/Wrap/EditorWrap';
 
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -15,6 +14,7 @@ import { IFeed, IUser, uploadImage } from '@/types/common';
 import { useLocation, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { setDoc } from 'firebase/firestore';
+import ContentWrap from '@/components/Wrap/ContentWrap';
 
 const Posting = () => {
   const queryClient = useQueryClient();
@@ -86,8 +86,7 @@ const Posting = () => {
           [{ header: [1, 2, false] }],
           ['bold', 'italic', 'underline', 'strike', 'blockquote'],
           [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
-          ['link', 'image'],
-          ['clean'],
+          ['image'],
         ],
         handlers: {
           image: handleImage,
@@ -106,7 +105,6 @@ const Posting = () => {
     'list',
     'bullet',
     'indent',
-    'link',
     'image',
   ];
 
@@ -174,15 +172,17 @@ const Posting = () => {
 
   return (
     <PageWrap>
-      <EditorWrap>
-        <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <ContentWrap>
+        <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 작성해주세요" />
         <ReactQuill
+          className="mb-10"
           ref={quillRef}
           theme="snow"
           value={content}
           onChange={setContent}
           modules={modules}
           formats={formats}
+          placeholder="내용을 입력해주세요"
         />
         {mode === 'create' ? (
           <Button variant="outline" onClick={() => uploadNewfeed()}>
@@ -193,7 +193,7 @@ const Posting = () => {
             수정
           </Button>
         )}
-      </EditorWrap>
+      </ContentWrap>
     </PageWrap>
   );
 };
