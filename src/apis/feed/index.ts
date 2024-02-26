@@ -1,17 +1,10 @@
-import { db } from '@/firebase/firebase';
+import { db, storage } from '@/firebase/firebase';
+import { IFeed } from '@/types/common';
 import { collection, deleteDoc, doc, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { deleteObject, ref } from 'firebase/storage';
 
-export interface IArticle {
+export interface IArticle extends IFeed {
   articleId: string;
-  uid: string;
-  nickName: string;
-  title: string;
-  content: string;
-  images: string[];
-  like: string[];
-  profileImage: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export const fetchUsersArticles = async ({ queryKey }: { queryKey: string[] }) => {
@@ -31,10 +24,16 @@ export const fetchUsersArticles = async ({ queryKey }: { queryKey: string[] }) =
   }
 };
 
-export const onRemoveArticle = async (articleId: string) => {
+export const onRemoveArticle = async (articleId: string, article: IFeed) => {
   try {
     const articleRef = doc(db, 'feeds', articleId as string);
     await deleteDoc(articleRef);
+
+    const images = article.images;
+    images.forEach(async ({ filePath }) => {
+      const storageRef = ref(storage, filePath);
+      await deleteObject(storageRef);
+    });
     console.log(`articleId : ${articleId}에 해당하는 게시글이 삭제 되었습니다.`);
   } catch (error) {
     console.log(error);

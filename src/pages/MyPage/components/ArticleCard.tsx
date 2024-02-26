@@ -66,7 +66,7 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
     }
   }, [parentIds, combinedChildren]);
 
-  const { mutate: removeArticle } = useRemoveArticle(articleId, location.pathname);
+  const { mutate: removeArticle } = useRemoveArticle(articleId, article!, location.pathname);
 
   return (
     <div className="relative border-black border-t border-b my-[10px] p-[10px] pl-[20px] flex flex-col gap-3 bg-gray-100">

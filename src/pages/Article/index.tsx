@@ -40,7 +40,7 @@ const Article = () => {
 
   const { mutate: likeArticle } = useArticleLike();
 
-  const { mutate: removeArticle } = useRemoveArticle(articleId, location.pathname);
+  const { mutate: removeArticle } = useRemoveArticle(articleId, article!, location.pathname);
 
   return (
     <PageWrap>
