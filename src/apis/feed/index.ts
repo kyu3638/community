@@ -3,17 +3,8 @@ import { IFeed } from '@/types/common';
 import { collection, deleteDoc, doc, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
 
-export interface IArticle {
+export interface IArticle extends IFeed {
   articleId: string;
-  uid: string;
-  nickName: string;
-  title: string;
-  content: string;
-  images: string[];
-  like: string[];
-  profileImage: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export const fetchUsersArticles = async ({ queryKey }: { queryKey: string[] }) => {
@@ -39,7 +30,7 @@ export const onRemoveArticle = async (articleId: string, article: IFeed) => {
     await deleteDoc(articleRef);
 
     const images = article.images;
-    images.forEach(async({ filePath }) => {
+    images.forEach(async ({ filePath }) => {
       const storageRef = ref(storage, filePath);
       await deleteObject(storageRef);
     });
