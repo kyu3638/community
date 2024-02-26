@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { fetchUsers } from '@/apis/user/users';
-// import { CgSearch } from '@react-icons/all-files/cg/CgSearch';
-import { FaUser } from '@react-icons/all-files/fa/FaUser';
 import UserCard from './UserCard';
 import { useFollow } from '@/hooks/useFollow';
 import { IUser } from '@/types/common';

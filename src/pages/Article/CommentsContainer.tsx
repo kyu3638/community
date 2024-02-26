@@ -435,7 +435,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       const isEditChild = child.mode === 'edit';
                       return (
                         <div key={childId}>
-                          <div className="flex items-center gap-5">
+                          <div className="flex items-center gap-5 mb-3">
                             <AvatarInComment avatarImageSrc={child.profileImage} />
                             {child.nickName}
                           </div>
@@ -443,7 +443,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                             {isViewChild && (
                               <>
                                 <span className="ml-3 mr-3 w-[80%] bg-[#F8FAFC] rounded-md">{child.comment}</span>
-                                <div className="flex gap-3 items-center">
+                                <div className="flex gap-3 items-center text-gray-500">
                                   {isLikeChild ? (
                                     <FcLike
                                       onClick={() =>
