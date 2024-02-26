@@ -45,7 +45,7 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <div className="bg-[#F4F7FC] min-h-screen">
       <BrowserRouter>
         <Suspense fallback={<div>Loading...</div>}>
           <QueryClientProvider client={queryClient}>

@@ -59,17 +59,16 @@ const Newsfeed = () => {
                 {contentToText(feed.content)}
                 <span className="text-gray-500 font-bold"> ...더보기</span>
               </Link>
-              <div className="flex gap-2 relative text-sm text-gray-700">
-                <span className="flex gap-2">좋아요</span>
-                <span>{countLike}</span>
-              </div>
-              <div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
                 {isLike ? (
                   <FcLike onClick={() => likeArticle({ articleId: feedId as string, type: 'removeLike' })} />
                 ) : (
                   <FaRegHeart onClick={() => likeArticle({ articleId: feedId as string, type: 'addLike' })} />
                 )}
+                <span className="flex gap-2">좋아요</span>
+                <span>{countLike}</span>
               </div>
+              <div></div>
             </ArticleWrap>
           );
         })}
