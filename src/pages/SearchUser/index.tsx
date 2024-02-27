@@ -5,11 +5,10 @@ import { Input } from '@/components/ui/input';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { fetchUsers } from '@/apis/user/users';
-// import { CgSearch } from '@react-icons/all-files/cg/CgSearch';
-import { FaUser } from '@react-icons/all-files/fa/FaUser';
 import UserCard from './UserCard';
 import { useFollow } from '@/hooks/useFollow';
 import { IUser } from '@/types/common';
+import { FaSearch } from '@react-icons/all-files/fa/FaSearch';
 
 const SearchUser = () => {
   const { searchKeyword, setSearchKeyword, mutate: editFollow } = useFollow();
@@ -41,9 +40,13 @@ const SearchUser = () => {
     <div>
       <PageWrap>
         <ContentWrap>
-          <div className="flex items-center gap-5">
-            <FaUser size={35} /> 임시
-            <Input value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
+          <div className="flex items-center gap-3 ml-3 mr-3">
+            <FaSearch size={30} />
+            <Input
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              placeholder="검색할 유저명을 작성해주세요"
+            />
           </div>
           <div>
             {usersToShow?.map((user, index) => {

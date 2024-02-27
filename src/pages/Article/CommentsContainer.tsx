@@ -6,6 +6,7 @@ import { db } from '@/firebase/firebase';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   QueryDocumentSnapshot,
+  Timestamp,
   addDoc,
   arrayRemove,
   arrayUnion,
@@ -20,6 +21,7 @@ import React, { useEffect, useState } from 'react';
 import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
 import { FcLike } from '@react-icons/all-files/fc/FcLike';
 import unknownImage from '/unknown.png';
+import { BsArrowReturnRight } from '@react-icons/all-files/bs/BsArrowReturnRight';
 
 interface ICommentsProps {
   articleId: string;
@@ -32,7 +34,7 @@ interface ICommentFromDB extends QueryDocumentSnapshot {
   profileImage: string;
   comment: string;
   like: string[];
-  createdAt: Date;
+  createdAt: Date | Timestamp;
   isRemoved: boolean;
 }
 
@@ -343,18 +345,31 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       };
     });
   };
+
+  const formatDate = (timestampDate: Timestamp) => {
+    if (!timestampDate) return;
+    const realDate: Date = timestampDate.toDate();
+    const year = realDate.getFullYear();
+    const month = realDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더해줌
+    const day = realDate.getDate();
+
+    // 한 자리 수 월/일의 경우 앞에 0을 붙여줌
+    const showMonth = month < 10 ? '0' + month : month;
+    const showDate = day < 10 ? '0' + day : day;
+
+    return `${year}년 ${showMonth}월 ${showDate}일`;
+  };
   return (
     <>
       <div className="flex flex-col">
-        <div className="flex items-center">
-          <Textarea value={createParentCommentInput} onChange={onChangeCreateParentCommentInput} />
+        <div className="flex items-center justify-between mb-3">
+          <Textarea className="w-[90%]" value={createParentCommentInput} onChange={onChangeCreateParentCommentInput} />
           <Button onClick={() => uploadParentComment()}>작성</Button>
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           {Object.entries(parentsState).map(([id, parentComment]) => {
             const parentId = id;
             const parent = parentComment as IParentComment;
-            console.log(parent);
             const isLike = parent?.like.includes(userUid as string);
             const isCommentWriter = parent?.uid === userUid;
             const isView = parent?.mode === 'view';
@@ -362,16 +377,19 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
             const isCreateChildMode = parent?.newChildCreateMode;
             const children = parent?.children;
             return (
-              <div key={parentId} className="border">
-                <div className="flex items-center gap-5">
+              <div key={parentId} /* className="border" */>
+                <div className="flex items-center gap-5 pl-3 mb-3">
                   <AvatarInComment avatarImageSrc={parent.profileImage} />
-                  {parent.nickName}
+                  <div className="flex flex-col">
+                    <span className="text-lg font-bold">{parent.nickName}</span>
+                    <span className="text-gray-400 text-sm">{formatDate(parent.createdAt as Timestamp)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between mb-2">
                   {isView && (
                     <>
-                      <span>{parent.comment}</span>
-                      <div className="flex gap-3">
+                      <span className="ml-3 mr-3 w-[80%] bg-[#F8FAFC] rounded-md">{parent.comment}</span>
+                      <div className="flex gap-3 items-center text-gray-500">
                         {isLike ? (
                           <FcLike onClick={() => likeComment({ parentId: parentId, type: 'removeLike' })} />
                         ) : (
@@ -379,8 +397,15 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         )}
                         {isCommentWriter && (
                           <>
-                            <span onClick={() => onChangeParentCommentMode(parentId, 'edit')}>수정</span>
-                            <span onClick={() => removeComment({ parentId: parentId })}>삭제</span>
+                            <span
+                              className="cursor-pointer"
+                              onClick={() => onChangeParentCommentMode(parentId, 'edit')}
+                            >
+                              수정
+                            </span>
+                            <span className="cursor-pointer" onClick={() => removeComment({ parentId: parentId })}>
+                              삭제
+                            </span>
                           </>
                         )}
                       </div>
@@ -409,16 +434,16 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                       const isViewChild = child.mode === 'view';
                       const isEditChild = child.mode === 'edit';
                       return (
-                        <div key={childId} className="border border-red-500">
-                          <div className="flex items-center gap-5">
+                        <div key={childId}>
+                          <div className="flex items-center gap-5 mb-3">
                             <AvatarInComment avatarImageSrc={child.profileImage} />
                             {child.nickName}
                           </div>
                           <div className="flex justify-between">
                             {isViewChild && (
                               <>
-                                <span>{child.comment}</span>
-                                <div className="flex gap-3">
+                                <span className="ml-3 mr-3 w-[80%] bg-[#F8FAFC] rounded-md">{child.comment}</span>
+                                <div className="flex gap-3 items-center text-gray-500">
                                   {isLikeChild ? (
                                     <FcLike
                                       onClick={() =>
@@ -463,7 +488,10 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                         </div>
                       );
                     })}
-                  <span onClick={() => onChangeChildCreateMode(parentId)}>{`=> 대댓글 추가하기`}</span>
+                  <span className="flex items-center gap-2" onClick={() => onChangeChildCreateMode(parentId)}>
+                    <BsArrowReturnRight />
+                    {`댓글 추가하기`}
+                  </span>
                   {/* 대댓글 추가하기 활성화 될 때 */}
                   {isCreateChildMode && (
                     <div className="flex items-center">
@@ -475,6 +503,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
                     </div>
                   )}
                 </div>
+                <hr />
               </div>
             );
           })}

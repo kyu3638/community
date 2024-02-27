@@ -3,11 +3,22 @@ import { Button } from '@/components/ui/button';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { auth } from '@/firebase/firebase';
 import logoImage from '/logo.png';
+import { useCallback } from 'react';
 
 const NavBar = () => {
   const { isLogin, userUid, updateUserUid } = useUserUid();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isCurrentPage = useCallback(
+    (pageName?: string) => {
+      if (pageName === location.pathname.split('/').filter((v) => v !== '')[0]) {
+        return 'font-bold';
+      }
+      return '';
+    },
+    [location]
+  );
 
   const handleLogout = async () => {
     try {
@@ -26,18 +37,23 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="w-full h-nav-bar-height flex items-center justify-around px-5 border-b">
-      <div className="flex justify-start flex-grow">
+    <nav className="w-full h-nav-bar-height flex items-center justify-around px-5 border-b-2 bg-[#edf3fd]">
+      <div className="flex justify-start flex-grow items-center">
         <Link to={'/'}>
           <img className="w-[50px] h-[50px]" src={logoImage} />
         </Link>
+        <h1 className="text-2xl">코드숲</h1>
       </div>
       <div className="flex-grow flex justify-center gap-5">
-        <Link to={'/'}>뉴스피드</Link>
-        <Link to={'/search-user'} onClick={onClickReload}>
+        <Link className={`${isCurrentPage(undefined)}`} to={'/'}>
+          뉴스피드
+        </Link>
+        <Link className={`${isCurrentPage('search-user')}`} to={'/search-user'} onClick={onClickReload}>
           유저 찾기
         </Link>
-        <Link to={`/user/${userUid}`}>마이페이지</Link>
+        <Link className={`${isCurrentPage('user')}`} to={`/user/${userUid}`}>
+          마이페이지
+        </Link>
       </div>
       <div className="flex-grow flex justify-end gap-5">
         {isLogin ? (

@@ -15,6 +15,7 @@ import { useArticleLike } from '@/hooks/useArticleLike';
 import { useRemoveArticle } from '@/hooks/useRemoveArticle';
 import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
 import { FcLike } from '@react-icons/all-files/fc/FcLike';
+import { Timestamp } from 'firebase/firestore';
 
 const Article = () => {
   const params = useParams();
@@ -42,35 +43,50 @@ const Article = () => {
 
   const { mutate: removeArticle } = useRemoveArticle(articleId, article!, location.pathname);
 
+  const formatDate = (timestampDate: Timestamp) => {
+    if (!timestampDate) return;
+    const realDate: Date = timestampDate.toDate();
+    const year = realDate.getFullYear();
+    const month = realDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더해줌
+    const day = realDate.getDate();
+
+    // 한 자리 수 월/일의 경우 앞에 0을 붙여줌
+    const showMonth = month < 10 ? '0' + month : month;
+    const showDate = day < 10 ? '0' + day : day;
+
+    return `${year}년 ${showMonth}월 ${showDate}일`;
+  };
+
   return (
     <PageWrap>
       <ContentWrap>
-        <div className="flex items-center gap-5">
+        <div className="relative flex items-center gap-5">
           <AvatarInCard avatarImageSrc={article?.profileImage} />
-          <div>{article?.nickName}</div>
-        </div>
-        <div>{article?.title}</div>
-        <div dangerouslySetInnerHTML={{ __html: article?.content as string }} />
-        <div className="flex gap-10">
-          <div>{article?.like.length}</div>
-          {article?.like.includes(userUid as string) ? (
-            <div onClick={() => likeArticle({ articleId: articleId, type: 'removeLike' })}>
-              <FcLike />
-            </div>
-          ) : (
-            <div onClick={() => likeArticle({ articleId: articleId, type: 'addLike' })}>
-              <FaRegHeart />
+          <div className="flex flex-col">
+            <span className="text-lg font-bold">{article?.nickName}</span>
+            <span className="text-gray-400">{formatDate(article?.createdAt as Timestamp)}</span>
+          </div>
+          {myArticle && (
+            <div className="absolute top-5 right-5 flex gap-2">
+              <Link to={`/posting`} state={{ mode: 'edit', article: article, articleId: articleId }}>
+                <Button>수정</Button>
+              </Link>
+              <Button onClick={() => removeArticle()}>삭제</Button>
             </div>
           )}
         </div>
-        {myArticle && (
-          <div>
-            <Link to={`/posting`} state={{ mode: 'edit', article: article, articleId: articleId }}>
-              <Button>수정</Button>
-            </Link>
-            <Button onClick={() => removeArticle()}>삭제</Button>
-          </div>
-        )}
+        <div className="font-bold text-xl pl-2c">{article?.title}</div>
+        <hr />
+        <div dangerouslySetInnerHTML={{ __html: article?.content as string }} />
+        <div className="flex items-center gap-2 relative text-sm text-gray-700">
+          {article?.like.includes(userUid as string) ? (
+            <FcLike onClick={() => likeArticle({ articleId: articleId, type: 'removeLike' })} />
+          ) : (
+            <FaRegHeart onClick={() => likeArticle({ articleId: articleId, type: 'addLike' })} />
+          )}
+          <span className="flex gap-2">좋아요</span>
+          <span>{article?.like.length}</span>
+        </div>
         <CommentsContainer articleId={articleId!} />
       </ContentWrap>
     </PageWrap>

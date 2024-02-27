@@ -1,4 +1,4 @@
-import { DocumentData } from 'firebase/firestore';
+import { DocumentData, Timestamp } from 'firebase/firestore';
 import React, { ReactNode } from 'react';
 
 export interface IChildrenProps {
@@ -57,7 +57,7 @@ export interface IFeed {
   content: string;
   like: string[];
   images: uploadImage[];
-  createdAt: Date;
+  createdAt: Date | Timestamp;
   updatedAt: Date;
 }
 
@@ -69,7 +69,7 @@ export interface IComment {
   comment: string;
   parentId: string | null;
   like: string[];
-  createdAt: Date;
+  createdAt: Date | Timestamp;
   updatedAt: Date;
   isRemoved: boolean;
 }
