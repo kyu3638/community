@@ -45,6 +45,7 @@ const Article = () => {
   const { mutate: removeArticle } = useRemoveArticle(articleId, article!, location.pathname);
 
   const formatDate = (timestampDate: Timestamp) => {
+    console.log(timestampDate);
     if (!timestampDate) return;
     const realDate: Date = timestampDate.toDate();
     const year = realDate.getFullYear();

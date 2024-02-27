@@ -9,7 +9,7 @@ import { db, storage } from '@/firebase/firebase';
 import { getDownloadURL, ref, uploadBytes, deleteObject } from '@firebase/storage';
 import { useUserUid } from '@/contexts/LoginUserState';
 import { RangeStatic } from 'quill';
-import { collection, doc, getDoc, updateDoc } from '@firebase/firestore';
+import { collection, doc, getDoc, updateDoc, serverTimestamp } from '@firebase/firestore';
 import { IFeed, IUser, uploadImage } from '@/types/common';
 import { useLocation, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -85,7 +85,7 @@ const Posting = () => {
       toolbar: {
         container: [
           [{ header: [1, 2, false] }],
-          ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+          ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
           [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
           ['image'],
         ],
@@ -103,12 +103,13 @@ const Posting = () => {
     'underline',
     'strike',
     'blockquote',
+    'code-block',
     'list',
     'bullet',
     'indent',
     'image',
   ];
-
+  console.log(`article?.createdAt`, article?.createdAt);
   const onPostUploadHandler = async () => {
     try {
       // content에서 base64를 url로 변경
@@ -145,8 +146,8 @@ const Posting = () => {
         content: newContent,
         like: article?.like || [],
         images: newImages,
-        createdAt: article?.createdAt || new Date(),
-        updatedAt: new Date(),
+        createdAt: article?.createdAt ? new Date(article?.createdAt.seconds * 1000) : serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
       // 새글 생성일 경우 새로운 doc add
       if (mode === 'create') {
