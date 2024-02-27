@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { IUser } from '@/types/common';
 import { useUserUid } from '@/contexts/LoginUserState';
 import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
@@ -116,8 +116,8 @@ const SignUpStepOne = () => {
               nickName: '',
               introduction: '',
               profileImage: { comment: '', card: '', profile: '' },
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
               follower: [],
               following: [],
               like: [],

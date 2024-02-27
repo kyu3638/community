@@ -15,6 +15,7 @@ import {
   getDocs,
   orderBy,
   query,
+  serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
@@ -151,7 +152,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       profileImage: userData?.profileImage.comment,
       comment: createParentCommentInput,
       like: [],
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
       isRemoved: false,
     };
     const ref = collection(db, `feeds/${articleId}/parentComments`);
@@ -310,7 +311,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
       profileImage: userData?.profileImage.comment,
       comment: parentsState[commentId].newChildText,
       like: [],
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
       isRemoved: false,
     };
     const newChildRef = collection(db, `feeds/${articleId}/parentComments/${commentId}/childComments`);

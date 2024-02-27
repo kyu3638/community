@@ -1,5 +1,5 @@
 import { useUserUid } from '@/contexts/LoginUserState';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { auth, db, storage } from '@/firebase/firebase';
 import { useNavigate } from 'react-router-dom';
@@ -101,7 +101,7 @@ const SignUpStepTwo = () => {
         nickName: nickName,
         introduction: introduction,
         profileImage: saveProfileImages,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(),
       };
       if (userUid) {
         const docRef = doc(db, 'users', userUid);

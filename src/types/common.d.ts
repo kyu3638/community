@@ -1,4 +1,4 @@
-import { DocumentData, Timestamp } from 'firebase/firestore';
+import { DocumentData, FieldValue, Timestamp } from 'firebase/firestore';
 import React, { ReactNode } from 'react';
 
 export interface IChildrenProps {
@@ -24,8 +24,8 @@ export interface IUser extends DocumentData {
     card: string;
     comment: string;
   };
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | FieldValue;
+  updatedAt: Date | FieldValue;
   follower: string[];
   following: string[];
   like: string[];
@@ -57,8 +57,8 @@ export interface IFeed {
   content: string;
   like: string[];
   images: uploadImage[];
-  createdAt: Date | Timestamp;
-  updatedAt: Date;
+  createdAt: Date | Timestamp | FieldValue;
+  updatedAt: Date | Timestamp | FieldValue;
 }
 
 export interface IComment {
@@ -69,8 +69,8 @@ export interface IComment {
   comment: string;
   parentId: string | null;
   like: string[];
-  createdAt: Date | Timestamp;
-  updatedAt: Date;
+  createdAt: Date | Timestamp | FieldValue;
+  updatedAt: Date | Timestamp | FieldValue;
   isRemoved: boolean;
 }
 
