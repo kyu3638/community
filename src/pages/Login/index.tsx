@@ -16,6 +16,7 @@ import googleLoginButton from '/google-login.png';
 import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
 import { FaUser } from '@react-icons/all-files/fa/FaUser';
 import { RiLockPasswordFill } from '@react-icons/all-files/ri/RiLockPasswordFill';
+import Metadatas from '@/metadatas/Metadatas';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -116,6 +117,7 @@ const Login = () => {
   };
   return (
     <AuthPageWrap>
+      <Metadatas title={`로그인`} desc={`코드숲 로그인 페이지입니다.`} />
       <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
         <h1 className="text-xl font-extrabold">USER LOGIN</h1>
         <LoginInput

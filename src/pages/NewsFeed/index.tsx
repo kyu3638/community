@@ -11,6 +11,7 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import { FcLike } from '@react-icons/all-files/fc/FcLike';
 import { useArticleLike } from '@/hooks/useArticleLike';
 import { IFeed } from '@/types/common';
+import Metadatas from '@/metadatas/Metadatas';
 
 const Newsfeed = () => {
   const { userUid } = useUserUid();
@@ -40,6 +41,7 @@ const Newsfeed = () => {
   return (
     <PageWrap>
       <ContentWrap>
+        <Metadatas title={`뉴스피드`} desc={`코드숲 뉴스피드 페이지입니다.`} />
         {newsfeed?.map((feedIdData, index) => {
           const feedId = feedIdData[0];
           const feed = feedIdData[1] as IFeed;

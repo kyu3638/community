@@ -14,6 +14,7 @@ import { useUserUid } from '@/contexts/LoginUserState';
 import AuthPageWrap from '@/components/Wrap/AuthPageWrap';
 import { RiLockPasswordFill } from '@react-icons/all-files/ri/RiLockPasswordFill';
 import { FaUser } from '@react-icons/all-files/fa/FaUser';
+import Metadatas from '@/metadatas/Metadatas';
 
 const SignUpStepOne = () => {
   const [email, setEmail] = useState('');
@@ -132,6 +133,7 @@ const SignUpStepOne = () => {
 
   return (
     <AuthPageWrap>
+      <Metadatas title={`회원가입`} desc={`코드숲 회원가입 페이지입니다.`} />
       <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
         <div className="text-xl font-extrabold">회원가입 step 1</div>
         <div>
