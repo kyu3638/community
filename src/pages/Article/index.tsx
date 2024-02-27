@@ -16,6 +16,7 @@ import { useRemoveArticle } from '@/hooks/useRemoveArticle';
 import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
 import { FcLike } from '@react-icons/all-files/fc/FcLike';
 import { Timestamp } from 'firebase/firestore';
+import Metadatas from '@/metadatas/Metadatas';
 
 const Article = () => {
   const params = useParams();
@@ -57,9 +58,16 @@ const Article = () => {
     return `${year}년 ${showMonth}월 ${showDate}일`;
   };
 
+  const pureText = (text: string | undefined) => {
+    if (text) return text.replace(/(<([^>]+)>)/gi, '');
+    return '';
+  };
+
   return (
     <PageWrap>
       <ContentWrap>
+        {/* meta */}
+        <Metadatas title={`${article?.title || ''}`} desc={pureText(article?.content)} />
         <div className="relative flex items-center gap-5">
           <AvatarInCard avatarImageSrc={article?.profileImage} />
           <div className="flex flex-col">

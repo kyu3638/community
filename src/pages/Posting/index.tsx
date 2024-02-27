@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { setDoc } from 'firebase/firestore';
 import ContentWrap from '@/components/Wrap/ContentWrap';
+import Metadatas from '@/metadatas/Metadatas';
 
 const Posting = () => {
   const queryClient = useQueryClient();
@@ -173,6 +174,7 @@ const Posting = () => {
   return (
     <PageWrap>
       <ContentWrap>
+        <Metadatas title={`새 글 작성`} desc={`코드숲 새 글 작성 페이지입니다.`} />
         <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 작성해주세요" />
         <ReactQuill
           className="mb-10"

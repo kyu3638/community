@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useUserUid } from './contexts/LoginUserState';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { HelmetProvider } from 'react-helmet-async';
 
 // import NavBar from './layout/NavBar';
 // import GlobalStyle from './GlobalStyles';
@@ -46,27 +47,29 @@ function App() {
 
   return (
     <div className="bg-[#F4F7FC] min-h-screen">
-      <BrowserRouter>
-        <Suspense fallback={<div>Loading...</div>}>
-          <QueryClientProvider client={queryClient}>
-            <GlobalStyle />
-            <NavBar />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
-              <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Newsfeed />} />
-                <Route path="/article/:articleId" element={<Article />} />
-                <Route path="/posting" element={<Posting />} />
-                <Route path="/user/:userUid" element={<MyPage />} />
-                <Route path="/search-user" element={<SearchUser />} />
-              </Route>
-            </Routes>
-            <ReactQueryDevtools />
-          </QueryClientProvider>
-        </Suspense>
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <Suspense fallback={<div>Loading...</div>}>
+            <QueryClientProvider client={queryClient}>
+              <GlobalStyle />
+              <NavBar />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/sign-up-step-one" element={<SignUpStepOne />} />
+                <Route path="/sign-up-step-two" element={<SignUpStepTwo />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Newsfeed />} />
+                  <Route path="/article/:articleId" element={<Article />} />
+                  <Route path="/posting" element={<Posting />} />
+                  <Route path="/user/:userUid" element={<MyPage />} />
+                  <Route path="/search-user" element={<SearchUser />} />
+                </Route>
+              </Routes>
+              <ReactQueryDevtools />
+            </QueryClientProvider>
+          </Suspense>
+        </BrowserRouter>
+      </HelmetProvider>
     </div>
   );
 }

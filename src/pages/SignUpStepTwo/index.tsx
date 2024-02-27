@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 // import { PiPencilLineBold } from 'react-icons/pi';
 import { Input } from '@/components/ui/input';
 import imageCompression from 'browser-image-compression';
+import Metadatas from '@/metadatas/Metadatas';
 
 const SignUpStepTwo = () => {
   const [nickName, setNickName] = useState('');
@@ -116,6 +117,7 @@ const SignUpStepTwo = () => {
 
   return (
     <AuthPageWrap>
+      <Metadatas title={`회원가입`} desc={`코드숲 회원가입 페이지입니다.`} />
       <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
         <div className="text-xl font-extrabold">회원가입 step 2</div>
         <AvatarInSignUp avatarImageSrc={imageURL || imagePreviewURL} />

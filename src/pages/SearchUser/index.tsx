@@ -9,6 +9,7 @@ import UserCard from './UserCard';
 import { useFollow } from '@/hooks/useFollow';
 import { IUser } from '@/types/common';
 import { FaSearch } from '@react-icons/all-files/fa/FaSearch';
+import Metadatas from '@/metadatas/Metadatas';
 
 const SearchUser = () => {
   const { searchKeyword, setSearchKeyword, mutate: editFollow } = useFollow();
@@ -37,9 +38,10 @@ const SearchUser = () => {
   const usersToShow = users?.pages.map((q) => q?.querySnapshot).flat();
 
   return (
-    <div>
+    <>
       <PageWrap>
         <ContentWrap>
+          <Metadatas title={`유저찾기`} desc={`코드숲 유저찾기 페이지입니다.`} />
           <div className="flex items-center gap-3 ml-3 mr-3">
             <FaSearch size={30} />
             <Input
@@ -56,7 +58,7 @@ const SearchUser = () => {
         </ContentWrap>
       </PageWrap>
       <div ref={ref}>{isFetchingNextPage && <h3>Loading....</h3>}</div>
-    </div>
+    </>
   );
 };
 export default SearchUser;
