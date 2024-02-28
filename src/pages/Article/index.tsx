@@ -86,7 +86,9 @@ const Article = () => {
         </div>
         <div className="font-bold text-xl pl-2c">{article?.title}</div>
         <hr />
-        <div dangerouslySetInnerHTML={{ __html: article?.content as string }} />
+        <div className="ql-snow">
+          <div className="ql-editor" dangerouslySetInnerHTML={{ __html: article?.content as string }} />
+        </div>
         <div className="flex items-center gap-2 relative text-sm text-gray-700">
           {article?.like.includes(userUid as string) ? (
             <FcLike onClick={() => likeArticle({ articleId: articleId, type: 'removeLike' })} />
