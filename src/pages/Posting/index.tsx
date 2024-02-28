@@ -2,6 +2,12 @@ import PageWrap from '@/components/Wrap/PageWrap';
 
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import 'highlight.js/styles/github.css';
+import hljs from 'highlight.js';
+import javascript from 'highlight.js/lib/languages/javascript';
+import python from 'highlight.js/lib/languages/python';
+import typescript from 'highlight.js/lib/languages/typescript';
+import c from 'highlight.js/lib/languages/c';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -42,6 +48,11 @@ const Posting = () => {
     };
     getUser();
   }, []);
+
+  hljs.registerLanguage('javascript', javascript);
+  hljs.registerLanguage('python', python);
+  hljs.registerLanguage('typescript', typescript);
+  hljs.registerLanguage('  c', c);
 
   const handleImage = async () => {
     const input = document.createElement('input');
@@ -92,6 +103,9 @@ const Posting = () => {
         handlers: {
           image: handleImage,
         },
+      },
+      syntax: {
+        highlight: (text: string) => hljs.highlightAuto(text).value,
       },
     };
   }, []);
