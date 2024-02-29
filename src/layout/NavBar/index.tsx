@@ -42,7 +42,7 @@ const NavBar = () => {
         <Link to={'/'}>
           <img className="w-[50px] h-[50px]" src={logoImage} />
         </Link>
-        <h1 className="text-2xl">코드숲</h1>
+        <h1 className="text-2xl">코드숲 - Test</h1>
       </div>
       <div className="flex-grow flex justify-center gap-5">
         <Link className={`${isCurrentPage(undefined)}`} to={'/'}>
