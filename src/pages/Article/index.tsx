@@ -17,6 +17,7 @@ import { FaRegHeart } from '@react-icons/all-files/fa/FaRegHeart';
 import { FcLike } from '@react-icons/all-files/fc/FcLike';
 import { Timestamp } from 'firebase/firestore';
 import Metadatas from '@/metadatas/Metadatas';
+import 'react-quill/dist/quill.snow.css';
 
 const Article = () => {
   const params = useParams();
@@ -86,8 +87,10 @@ const Article = () => {
         </div>
         <div className="font-bold text-xl pl-2c">{article?.title}</div>
         <hr />
-        <div className="ql-snow">
-          <div className="ql-editor" dangerouslySetInnerHTML={{ __html: article?.content as string }} />
+        <div className="ql-container ql-snow">
+          <div className="ql-editor">
+            <div dangerouslySetInnerHTML={{ __html: article?.content as string }} />
+          </div>
         </div>
         <div className="flex items-center gap-2 relative text-sm text-gray-700">
           {article?.like.includes(userUid as string) ? (
