@@ -8,6 +8,7 @@ const ArticlesDetail = () => {
   const { data: articles } = useQuery({
     queryKey: ['usersArticles', targetUserUid!],
     queryFn: fetchUsersArticles,
+    staleTime: 1 * 60 * 1000,
   });
 
   return (

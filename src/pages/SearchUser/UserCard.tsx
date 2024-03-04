@@ -17,18 +17,18 @@ const UserCard = ({
   return (
     <UserCardWrap>
       <Link to={`/user/${user?.uid}`}>
-        <AvatarInCard avatarImageSrc={user?.profileImage.card} />
+        <AvatarInCard avatarImageSrc={user?.profileImage?.card} />
       </Link>
       <div>
         <div>닉네임 : {user?.nickName}</div>
-        <div>팔로워 : {user?.follower.length}</div>
-        <div>팔로잉 : {user?.following.length}</div>
+        <div>팔로워 : {user?.follower?.length}</div>
+        <div>팔로잉 : {user?.following?.length}</div>
         <div>소개말 : {user?.introduction}</div>
       </div>
       <div className="absolute right-3 top-3">
         {!isMyProfile && (
           <>
-            {user?.follower.includes(userUid!) ? (
+            {user?.follower?.includes(userUid!) ? (
               <Button
                 variant={'unfollow'}
                 size={'xs'}

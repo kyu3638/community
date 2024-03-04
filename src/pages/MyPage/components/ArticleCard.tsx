@@ -36,6 +36,7 @@ const ArticleCard = ({ article }: { article: IArticle }) => {
   const { data: parentIds, isSuccess } = useQuery({
     queryKey: ['articleParentComments', articleId],
     queryFn: fetchParent,
+    staleTime: 1 * 60 * 1000,
   });
 
   const fetchChildren = async ({ queryKey }: { queryKey: string[] }) => {

@@ -19,7 +19,7 @@ export const useFollow = () => {
       const previousSearchData = queryClient.getQueryData(['users', searchKeyword]);
       const previousUserData = queryClient.getQueryData(['user', userUid]);
       const previousFollowerData = queryClient.getQueryData(['follower', targetUid]);
-      // const previousFollowingData = queryClient.getQueryData(['following', targetUid]);
+      const previousFollowingData = queryClient.getQueryData(['following', targetUid]);
 
       if (previousSearchData) {
         queryClient.setQueryData(
@@ -68,24 +68,26 @@ export const useFollow = () => {
       if (previousFollowerData) {
         queryClient.setQueryData(['follower', targetUid], (prevTarget: IUser) => {
           if (prevTarget.follower.includes(userUid)) {
-            console.log(`언팔할 때`);
-            console.log(`userUid`, userUid);
-            console.log(`prevTarget.follower`, prevTarget.follower);
+            // console.log(`언팔할 때`);
+            // console.log(`userUid`, userUid);
+            // console.log(`prevTarget.follower`, prevTarget.follower);
             const removed = prevTarget.follower.filter((uid) => uid !== userUid);
-            console.log(`제거된  follower`, removed);
+            // console.log(`제거된  follower`, removed);
             return { ...prevTarget, follower: removed };
           } else {
-            console.log(`팔로우할 때`);
-            console.log(`prevTarget.follower`, prevTarget.follower);
+            // console.log(`팔로우할 때`);
+            // console.log(`prevTarget.follower`, prevTarget.follower);
             const added = [...prevTarget.follower, userUid];
-            console.log(`추가된  follower`, added);
+            // console.log(`추가된  follower`, added);
             return { ...prevTarget, follower: added };
           }
         });
       }
-      // if (previousFollowingData) {
-      //   queryClient.setQueryData(['following', targetUid], (prev) => undefined);
-      // }
+      if (previousFollowingData) {
+        queryClient.setQueryData(['following', targetUid], (prev) => {
+          console.log(`prev`, prev);
+        });
+      }
 
       return { previousSearchData, previousUserData };
     },
@@ -100,7 +102,8 @@ export const useFollow = () => {
       queryClient.invalidateQueries({ queryKey: ['user', variables.userUid] });
       // 나의 팔로잉,팔로우 정보 뿐만 아니라 target 유저의 정보도 갱신이 필요
       // (following은 목록에서 사라지기 때문에 무효화 해줄 필요 없지만, follower는 목록에 남기 때문에 ['follower', variables.targetUid] 쿼리키에 대해 무효화 필요)
-      // queryClient.invalidateQueries({ queryKey: ['follower', variables.targetUid] });
+      queryClient.invalidateQueries({ queryKey: ['follower', variables.targetUid] });
+      queryClient.invalidateQueries({ queryKey: ['following', variables.targetUid] });
     },
   });
 

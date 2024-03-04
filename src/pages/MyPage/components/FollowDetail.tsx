@@ -19,7 +19,7 @@ const FollowDetail = ({ mode }: { mode: string }) => {
       userToShow?.map((uid: string) => ({
         queryKey: [mode, uid],
         queryFn: () => fetchFollowing(uid),
-        staletime: Infinity,
+        staleTime: 1 * 60 * 1000,
       })) || [],
   });
 

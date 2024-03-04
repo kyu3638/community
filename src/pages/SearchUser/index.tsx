@@ -23,6 +23,7 @@ const SearchUser = () => {
   } = useInfiniteQuery({
     queryKey: ['users', searchKeyword],
     queryFn: fetchUsers,
+    staleTime: 1 * 60 * 1000,
     initialPageParam: null,
     getNextPageParam: (lastPage) => {
       const nextPageStart = lastPage?.lastDoc ? lastPage.lastDoc : null;
