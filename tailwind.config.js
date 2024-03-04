@@ -70,8 +70,11 @@ module.exports = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       height: {
-        'nav-bar-height': '6rem',
-        'auth-page-height': 'calc(100vh - 6rem)',
+        'nav-bar-height': '5rem',
+        'auth-page-height': 'calc(100vh - 5rem)',
+      },
+      fontFamily: {
+        jua: ['Jua'],
       },
     },
   },

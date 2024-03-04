@@ -78,6 +78,7 @@ const CommentsContainer = ({ articleId }: ICommentsProps) => {
   const { data: parents } = useQuery({
     queryKey: ['parentComments'],
     queryFn: fetchParentComments,
+    staleTime: 1 * 60 * 1000,
   });
   /** 부모 댓글 불러오면 children, mode 추가하여 객체형태로 state생성 */
   useEffect(() => {

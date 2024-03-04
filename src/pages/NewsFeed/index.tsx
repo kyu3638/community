@@ -30,6 +30,7 @@ const Newsfeed = () => {
   const { data: newsfeed } = useQuery({
     queryKey: ['newsfeed'],
     queryFn: fetchNewsfeed,
+    staleTime: 1 * 60 * 1000,
   });
 
   const contentToText = (content: string) => {

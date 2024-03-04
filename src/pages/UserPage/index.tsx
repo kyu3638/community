@@ -19,7 +19,12 @@ const UserPage = () => {
       console.log(error);
     }
   };
-  const { data: user } = useQuery({ queryKey: ['user'], queryFn: fetchUser, refetchOnWindowFocus: true });
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: fetchUser,
+    staleTime: 1 * 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
 
   return (
     <PageWrap>

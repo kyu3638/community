@@ -38,12 +38,10 @@ const NavBar = () => {
 
   return (
     <nav className="w-full h-nav-bar-height flex items-center justify-around px-5 border-b-2 bg-[#edf3fd]">
-      <div className="flex justify-start flex-grow items-center">
-        <Link to={'/'}>
-          <img className="w-[50px] h-[50px]" src={logoImage} />
-          <h1 className="text-2xl">코드숲</h1>
-        </Link>
-      </div>
+      <Link to={'/'} className="flex justify-start flex-grow items-center">
+        <img className="w-[50px] h-[50px]" src={logoImage} />
+        <h1 className="text-4xl font-jua">코드-숲</h1>
+      </Link>
       <div className="flex-grow flex justify-center gap-5">
         <Link className={`${isCurrentPage(undefined)}`} to={'/'}>
           뉴스피드

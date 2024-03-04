@@ -33,7 +33,11 @@ const Article = () => {
     const article = (await getDoc(articleRef)).data() as IFeed;
     return article;
   };
-  const { data: article } = useQuery({ queryKey: ['article', articleId], queryFn: fetchArticle });
+  const { data: article } = useQuery({
+    queryKey: ['article', articleId],
+    queryFn: fetchArticle,
+    staleTime: 1 * 60 * 1000,
+  });
 
   useEffect(() => {
     if (userUid === article?.uid) {
