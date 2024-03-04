@@ -41,8 +41,8 @@ const NavBar = () => {
       <div className="flex justify-start flex-grow items-center">
         <Link to={'/'}>
           <img className="w-[50px] h-[50px]" src={logoImage} />
+          <h1 className="text-2xl">코드숲</h1>
         </Link>
-        <h1 className="text-2xl">코드숲</h1>
       </div>
       <div className="flex-grow flex justify-center gap-5">
         <Link className={`${isCurrentPage(undefined)}`} to={'/'}>
