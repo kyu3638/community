@@ -17,16 +17,18 @@
 
 # 기술 스택
 
-<img src="https://img.shields.io/badge/Typescript-3178C6?style=for-the-badge&logo=Typescript&logoColor=white">
-<img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
-<img src="https://img.shields.io/badge/Tanstack Query-FF4154?style=for-the-badge&logo=ReactQuery&logoColor=white">
-<img src="https://img.shields.io/badge/Firebase-ffca28?style=for-the-badge&logo=Firebase&logoColor=white">
-<img src="https://img.shields.io/badge/Vite-646cff?style=for-the-badge&logo=Vite&logoColor=white">
-<img src="https://img.shields.io/badge/Cypress-69d3a7?style=for-the-badge&logo=cypress&logoColor=white">
-<img src="https://img.shields.io/badge/Tailwind CSS-06b6d4?style=for-the-badge&logo=Tailwindcss&logoColor=white">
-<img src="https://img.shields.io/badge/Amazon S3-569a31?style=for-the-badge&logo=Amazon S3&logoColor=white">
-<img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
-<img src="https://img.shields.io/badge/Github Action-2088ff?style=for-the-badge&logo=githubactions&logoColor=white">
+<p>
+    <img src="https://img.shields.io/badge/Typescript-3178C6?style=for-the-badge&logo=Typescript&logoColor=white">
+    <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
+    <img src="https://img.shields.io/badge/Tanstack Query-FF4154?style=for-the-badge&logo=ReactQuery&logoColor=white">
+    <img src="https://img.shields.io/badge/Firebase-ffca28?style=for-the-badge&logo=Firebase&logoColor=white">
+    <img src="https://img.shields.io/badge/Vite-646cff?style=for-the-badge&logo=Vite&logoColor=white">
+    <img src="https://img.shields.io/badge/Cypress-69d3a7?style=for-the-badge&logo=cypress&logoColor=white">
+    <img src="https://img.shields.io/badge/Tailwind CSS-06b6d4?style=for-the-badge&logo=Tailwindcss&logoColor=white">
+    <img src="https://img.shields.io/badge/Amazon S3-569a31?style=for-the-badge&logo=Amazon S3&logoColor=white">
+    <img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
+    <img src="https://img.shields.io/badge/Github Action-2088ff?style=for-the-badge&logo=githubactions&logoColor=white">
+</p>
 
 # 트러블슈팅과 고민이 담긴 블로그
 
