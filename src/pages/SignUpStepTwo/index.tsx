@@ -47,33 +47,41 @@ const SignUpStepTwo = () => {
   };
 
   const handleUpload = async () => {
-    if (selectedFile) {
-      const optionComment = {
-        maxWidthOrHeight: 100,
-      };
-      const optionCard = {
-        maxWidthOrHeight: 150,
-      };
-      const optionProfile = {
-        maxWidthOrHeight: 300,
-      };
-      const resizedImageFileComment = await imageCompression(selectedFile, optionComment);
-      const resizedImageFileCard = await imageCompression(selectedFile, optionCard);
-      const resizedImageFileProfile = await imageCompression(selectedFile, optionProfile);
+    try {
+      if (selectedFile) {
+        const optionComment = {
+          maxWidthOrHeight: 100,
+        };
+        const optionCard = {
+          maxWidthOrHeight: 150,
+        };
+        const optionProfile = {
+          maxWidthOrHeight: 300,
+        };
+        const [resizedImageFileComment, resizedImageFileCard, resizedImageFileProfile] = await Promise.all([
+          imageCompression(selectedFile, optionComment),
+          imageCompression(selectedFile, optionCard),
+          imageCompression(selectedFile, optionProfile),
+        ]);
 
-      const imageRefOriginal = ref(storage, `userImage/${userUid}/profileImage-size-original`);
-      const imageRefComment = ref(storage, `userImage/${userUid}/profileImage-size-comment`);
-      const imageRefCard = ref(storage, `userImage/${userUid}/profileImage-size-card`);
-      const imageRefProfile = ref(storage, `userImage/${userUid}/profileImage-size-profile`);
-      await uploadBytes(imageRefOriginal, selectedFile);
-      await uploadBytes(imageRefComment, resizedImageFileComment);
-      await uploadBytes(imageRefCard, resizedImageFileCard);
-      await uploadBytes(imageRefProfile, resizedImageFileProfile);
-      const downloadURLComment = await getDownloadURL(imageRefComment);
-      const downloadURLCard = await getDownloadURL(imageRefCard);
-      const downloadURLProfile = await getDownloadURL(imageRefProfile);
+        const imageRefComment = ref(storage, `userImage/${userUid}/profileImage-size-comment`);
+        const imageRefCard = ref(storage, `userImage/${userUid}/profileImage-size-card`);
+        const imageRefProfile = ref(storage, `userImage/${userUid}/profileImage-size-profile`);
+        await Promise.all([
+          uploadBytes(imageRefComment, resizedImageFileComment),
+          uploadBytes(imageRefCard, resizedImageFileCard),
+          uploadBytes(imageRefProfile, resizedImageFileProfile),
+        ]);
+        const [downloadURLComment, downloadURLCard, downloadURLProfile] = await Promise.all([
+          getDownloadURL(imageRefComment),
+          getDownloadURL(imageRefCard),
+          getDownloadURL(imageRefProfile),
+        ]);
 
-      return { cardImage: downloadURLCard, commentImage: downloadURLComment, profileImage: downloadURLProfile };
+        return { cardImage: downloadURLCard, commentImage: downloadURLComment, profileImage: downloadURLProfile };
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
