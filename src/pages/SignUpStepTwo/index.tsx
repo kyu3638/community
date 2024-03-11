@@ -16,13 +16,7 @@ const SignUpStepTwo = () => {
   const [nickName, setNickName] = useState('');
   const [introduction, setIntroduction] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imageURL, setImageURL] = useState('');
-  const [imagePreviewURL, setImagePreviewURL] = useState(unknownImage);
-  const [saveProfileImages, setSaveProfileImages] = useState({
-    card: unknownImage,
-    comment: unknownImage,
-    profile: unknownImage,
-  });
+  const [imageURL, setImageURL] = useState(unknownImage);
 
   const { userUid, updateUserUid } = useUserUid();
 
@@ -47,57 +41,54 @@ const SignUpStepTwo = () => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       const tempURL = URL.createObjectURL(file);
-      setImagePreviewURL(tempURL);
+      setImageURL(tempURL);
       setSelectedFile(file);
     }
   };
 
-  useEffect(() => {
-    const handleUpload = async () => {
-      if (selectedFile) {
-        const optionComment = {
-          maxWidthOrHeight: 100,
-        };
-        const optionCard = {
-          maxWidthOrHeight: 150,
-        };
-        const optionProfile = {
-          maxWidthOrHeight: 300,
-        };
-        const resizedImageFileComment = await imageCompression(selectedFile, optionComment);
-        const resizedImageFileCard = await imageCompression(selectedFile, optionCard);
-        const resizedImageFileProfile = await imageCompression(selectedFile, optionProfile);
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const optionComment = {
+        maxWidthOrHeight: 100,
+      };
+      const optionCard = {
+        maxWidthOrHeight: 150,
+      };
+      const optionProfile = {
+        maxWidthOrHeight: 300,
+      };
+      const resizedImageFileComment = await imageCompression(selectedFile, optionComment);
+      const resizedImageFileCard = await imageCompression(selectedFile, optionCard);
+      const resizedImageFileProfile = await imageCompression(selectedFile, optionProfile);
 
-        const imageRefOriginal = ref(storage, `userImage/${userUid}/profileImage-size-original`);
-        const imageRefComment = ref(storage, `userImage/${userUid}/profileImage-size-comment`);
-        const imageRefCard = ref(storage, `userImage/${userUid}/profileImage-size-card`);
-        const imageRefProfile = ref(storage, `userImage/${userUid}/profileImage-size-profile`);
-        await uploadBytes(imageRefOriginal, selectedFile);
-        await uploadBytes(imageRefComment, resizedImageFileComment);
-        await uploadBytes(imageRefCard, resizedImageFileCard);
-        await uploadBytes(imageRefProfile, resizedImageFileProfile);
-        const downloadURLComment = await getDownloadURL(imageRefComment);
-        const downloadURLCard = await getDownloadURL(imageRefCard);
-        const downloadURLProfile = await getDownloadURL(imageRefProfile);
-        setImageURL(downloadURLProfile);
-        setSaveProfileImages({ card: downloadURLCard, comment: downloadURLComment, profile: downloadURLProfile });
-      }
-    };
-    handleUpload();
-  }, [selectedFile]);
+      const imageRefOriginal = ref(storage, `userImage/${userUid}/profileImage-size-original`);
+      const imageRefComment = ref(storage, `userImage/${userUid}/profileImage-size-comment`);
+      const imageRefCard = ref(storage, `userImage/${userUid}/profileImage-size-card`);
+      const imageRefProfile = ref(storage, `userImage/${userUid}/profileImage-size-profile`);
+      await uploadBytes(imageRefOriginal, selectedFile);
+      await uploadBytes(imageRefComment, resizedImageFileComment);
+      await uploadBytes(imageRefCard, resizedImageFileCard);
+      await uploadBytes(imageRefProfile, resizedImageFileProfile);
+      const downloadURLComment = await getDownloadURL(imageRefComment);
+      const downloadURLCard = await getDownloadURL(imageRefCard);
+      const downloadURLProfile = await getDownloadURL(imageRefProfile);
 
-  useEffect(() => {
-    if (imageURL) {
-      setImagePreviewURL('');
+      return { cardImage: downloadURLCard, commentImage: downloadURLComment, profileImage: downloadURLProfile };
     }
-  }, [imageURL]);
+  };
 
   const signUpHandler = async () => {
     try {
+      const responseUrls = await handleUpload();
+      const userProfileImageURLs = {
+        card: responseUrls?.cardImage,
+        comment: responseUrls?.commentImage,
+        profile: responseUrls?.profileImage,
+      };
       const newData = {
         nickName: nickName,
         introduction: introduction,
-        profileImage: saveProfileImages,
+        profileImage: userProfileImageURLs,
         updatedAt: serverTimestamp(),
       };
       if (userUid) {
@@ -117,7 +108,7 @@ const SignUpStepTwo = () => {
       <Metadatas title={`회원가입`} desc={`코드숲 회원가입 페이지입니다.`} />
       <div className="flex flex-col justify-center items-center gap-5 w-[350px]">
         <div className="text-xl font-extrabold">회원가입 step 2</div>
-        <AvatarInSignUp avatarImageSrc={imageURL || imagePreviewURL} />
+        <AvatarInSignUp avatarImageSrc={imageURL} />
         <div className="flex items-center gap-5">
           <div className="text-l font-bold">프로필 이미지</div>
           <label className="input-file-button right-[9px] bottom-[9px] cursor-pointer" htmlFor="input-file">
