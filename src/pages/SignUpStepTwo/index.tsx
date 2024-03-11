@@ -23,7 +23,6 @@ const SignUpStepTwo = () => {
     comment: unknownImage,
     profile: unknownImage,
   });
-  
 
   const { userUid, updateUserUid } = useUserUid();
 
